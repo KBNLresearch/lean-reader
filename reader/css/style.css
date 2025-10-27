@@ -113,3 +113,7 @@ ul#boek-entry-list li {
   height: 100%;
   border-width: 0;
 }
+
+#voice-select {
+    max-width: calc(100% - 60px);
+}

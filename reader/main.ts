@@ -10,29 +10,62 @@ import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
 import { gatherAndPrepareTextNodes } from './helpers/visibleElementHelpers';
-import { WebSpeechReadAloudNavigator, type ReadiumSpeechVoice } from './readium-speech';
+import { WebSpeechReadAloudNavigator } from './readium-speech';
 
 function hideLoadingMessage() {
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
 }
 
+const navigator = new WebSpeechReadAloudNavigator()
+
 async function initVoices() {
   try {
-    voices = (await readAloudNavigator.getVoices()).filter(v => v.language.startsWith("nl"))
+    const voices = (await navigator.getVoices()).filter(v => v.language.startsWith("nl"))
+    const voiceSelect = document.getElementById("voice-select")!;
+    const playButton = document.getElementById("play-readaloud")!;
+    voices.forEach((voice, idx) => {
+      const opt = document.createElement("option");
+      opt.setAttribute("value", `${idx}`);
+      opt.innerHTML = `${voice.name} - ${voice.language}`
+      voiceSelect.appendChild(opt);
+    })
+    
     if (voices.length > 0) {
-         readAloudNavigator.setVoice(voices[0])
+      navigator.setVoice(voices[0])
+      voiceSelect.addEventListener("change", (ev) => {
+        navigator.setVoice(voices[parseInt((ev.target as HTMLOptionElement).value)])
+      })
+      if (voices.length === 1) {
+        voiceSelect.setAttribute("disabled", "disabled");
+      }
+      playButton.addEventListener("click", () => {
+        navigator.play()
+      })
+    } else {
+      voiceSelect.style.display = "none";
+      playButton.style.display = "none"
     }
+
   } catch (error) {
     console.error("Error initializing voices:", error);
   }
 }
+initVoices()
+
 
 const debug = document.getElementById("debug")!;
 const container = document.getElementById("container")!;
-const readAloudNavigator = new WebSpeechReadAloudNavigator()
-let voices : ReadiumSpeechVoice[] = []
 
-initVoices()
+navigator.on("start", ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("end",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("pause",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("resume",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("ready",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("boundary",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("mark",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("voiceschanged",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+navigator.on("stop",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+
 
 async function init(bookId: string) {
   const publicationURL = `${import.meta.env.VITE_MANIFEST_SRC}/${bookId}/manifest.json`;
@@ -51,12 +84,11 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          const readAloudTextNodes = gatherAndPrepareTextNodes(wnd);
-          readAloudTextNodes.forEach((ratn) => {
-            ratn.rangedTextNodes.forEach((rtn) => {
-              console.log(rtn.textNode)
-            })
-          })
+          const documentTextNodes = gatherAndPrepareTextNodes(wnd);
+            navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+                id: `${idx}`,
+                text: dtn.utteranceStr
+            })));
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
@@ -64,11 +96,11 @@ async function init(bookId: string) {
         },
         tap: function (e: FrameClickEvent): boolean {
           console.log("tap e=", e )
-          return false;
+          return true;
         },
         click: function (e: FrameClickEvent): boolean {
           console.log("click e=", e)
-          return false;
+          return true;
         },
         zoom: function (scale: number): void {
           console.log("zoom scale=", scale)
