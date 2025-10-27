@@ -418,10 +418,11 @@ export class WebSpeechEngine implements ReadiumSpeechPlaybackEngine {
     if (this.playbackState === "playing") {
       // Android-specific handling: pause causes speech to end but not fire end-event
       // so we simply do it manually instead of pausing
-      if (this.patches.isAndroid) {
-        this.speechSynthesis.cancel();
-        return;
-      }
+      // if (this.patches.isAndroid) {
+      // this.emitEvent({ type: "pause" });
+      //   this.speechSynthesis.cancel();
+      //   return;
+      // }
   
       this.speechSynthesis.pause();
       // in some cases, pause does not update the internal state,

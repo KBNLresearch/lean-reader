@@ -10,37 +10,45 @@ import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
 import { gatherAndPrepareTextNodes } from './helpers/visibleElementHelpers';
-import { WebSpeechReadAloudNavigator } from './readium-speech';
+import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 
 function hideLoadingMessage() {
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
 }
 
 const navigator = new WebSpeechReadAloudNavigator()
+const playButton = document.getElementById("play-readaloud")!;
 
+const VOICE_URI_KEY = "voiceURI";
 async function initVoices() {
   try {
     const voices = (await navigator.getVoices()).filter(v => v.language.startsWith("nl"))
     const voiceSelect = document.getElementById("voice-select")!;
-    const playButton = document.getElementById("play-readaloud")!;
     voices.forEach((voice, idx) => {
       const opt = document.createElement("option");
       opt.setAttribute("value", `${idx}`);
+      if (voice.voiceURI === localStorage.getItem(VOICE_URI_KEY)) {
+        opt.setAttribute("selected", "selected");
+      }
       opt.innerHTML = `${voice.name} - ${voice.language}`
       voiceSelect.appendChild(opt);
     })
-    
     if (voices.length > 0) {
-      navigator.setVoice(voices[0])
+      const storedVoice = voices.find((v) => v.voiceURI === localStorage.getItem(VOICE_URI_KEY));
+      if (storedVoice) {
+        navigator.setVoice(storedVoice);
+      } else {
+        navigator.setVoice(voices[0])
+      }
       voiceSelect.addEventListener("change", (ev) => {
-        navigator.setVoice(voices[parseInt((ev.target as HTMLOptionElement).value)])
+        const voice = voices[parseInt((ev.target as HTMLOptionElement).value)];
+        navigator.setVoice(voice)
+        localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
       })
       if (voices.length === 1) {
         voiceSelect.setAttribute("disabled", "disabled");
       }
-      playButton.addEventListener("click", () => {
-        navigator.play()
-      })
+      playButton.addEventListener("click", onPlayButtonClicked)
     } else {
       voiceSelect.style.display = "none";
       playButton.style.display = "none"
@@ -56,15 +64,43 @@ initVoices()
 const debug = document.getElementById("debug")!;
 const container = document.getElementById("container")!;
 
-navigator.on("start", ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("end",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("pause",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("resume",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("ready",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("boundary",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("mark",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("voiceschanged",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
-navigator.on("stop",  ({ type, detail }) => { console.log(type, detail); console.log(navigator.getState()) });
+function onPlayButtonClicked() {
+  if (navigator.getState() === "playing") {
+      navigator.pause()
+  } else {
+      navigator.play()
+  }
+}
+
+function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
+  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  switch (navigator.getState()) {
+    case "playing":
+      playButton.removeAttribute("disabled");
+      playButton.innerHTML = "⏸︎"
+      break;
+    case "loading":
+      playButton.setAttribute("disabled", "disabled");
+      playButton.innerHTML = "⏵︎"
+      break;
+    case "ready":
+    case "idle":
+    case "paused":
+    default:
+      playButton.removeAttribute("disabled");
+      playButton.innerHTML = "⏵︎"
+  }
+}
+
+navigator.on("start",handleWebSpeechNavigatorEvent);
+navigator.on("end", handleWebSpeechNavigatorEvent);
+navigator.on("pause", handleWebSpeechNavigatorEvent);
+navigator.on("resume", handleWebSpeechNavigatorEvent);
+navigator.on("ready", handleWebSpeechNavigatorEvent);
+navigator.on("boundary", handleWebSpeechNavigatorEvent);
+navigator.on("mark", handleWebSpeechNavigatorEvent);
+navigator.on("voiceschanged", handleWebSpeechNavigatorEvent);
+navigator.on("stop", handleWebSpeechNavigatorEvent);
 
 
 async function init(bookId: string) {
