@@ -1,9 +1,10 @@
-import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
 import './css/style.css'
+
+import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
 // import Peripherals from './peripherals';
 // import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
 // import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
-import { EpubNavigator, FrameManager, FXLFrameManager, type EpubNavigatorListeners } from "@readium/navigator";
+import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 // import { Locator, Manifest, Publication } from "@readium/shared";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
@@ -46,8 +47,8 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          nav._cframes.forEach((frameManager: FrameManager | FXLFrameManager | undefined) => {
-          });
+          console.log("frameLoaded wnd=", wnd)
+
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
