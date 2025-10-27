@@ -9,28 +9,32 @@ import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-
-function unLinkCurrentLocation(bookId: string) {
-  document.querySelectorAll(`a[href*="${bookId}"]`).forEach((currentLink) => {
-    const replacementSpan = document.createElement("span");
-    replacementSpan.innerHTML = currentLink.innerHTML;
-    currentLink.replaceWith(replacementSpan);
-  });
-}
-
+import { gatherAndPrepareTextNodes } from './helpers/visibleElementHelpers';
+import { WebSpeechReadAloudNavigator, type ReadiumSpeechVoice } from './readium-speech';
 
 function hideLoadingMessage() {
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
 }
 
+async function initVoices() {
+  try {
+    voices = (await readAloudNavigator.getVoices()).filter(v => v.language.startsWith("nl"))
+    if (voices.length > 0) {
+         readAloudNavigator.setVoice(voices[0])
+    }
+  } catch (error) {
+    console.error("Error initializing voices:", error);
+  }
+}
 
 const debug = document.getElementById("debug")!;
 const container = document.getElementById("container")!;
+const readAloudNavigator = new WebSpeechReadAloudNavigator()
+let voices : ReadiumSpeechVoice[] = []
 
+initVoices()
 
 async function init(bookId: string) {
-  unLinkCurrentLocation(bookId);
-
   const publicationURL = `${import.meta.env.VITE_MANIFEST_SRC}/${bookId}/manifest.json`;
   const manifestLink = new Link({ href: "manifest.json" });
   const fetcher: Fetcher = new HttpFetcher(undefined, publicationURL);
@@ -47,8 +51,12 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          console.log("frameLoaded wnd=", wnd)
-
+          const readAloudTextNodes = gatherAndPrepareTextNodes(wnd);
+          readAloudTextNodes.forEach((ratn) => {
+            ratn.rangedTextNodes.forEach((rtn) => {
+              console.log(rtn.textNode)
+            })
+          })
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
