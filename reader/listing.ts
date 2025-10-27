@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const link = document.createElement("a");
         console.log(bookEntry);
         item.appendChild(link);
-        link.setAttribute("href", `/reader/?boek=${bookEntry.path}`);
+        link.setAttribute("href", `reader/?boek=${bookEntry.path}`);
         link.innerHTML = bookEntry.filename.replaceAll(".epub", "");
         listing.appendChild(item);
     })

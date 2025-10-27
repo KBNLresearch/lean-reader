@@ -5,12 +5,13 @@ import { defineConfig } from 'vite'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        reader: resolve(__dirname, 'reader/index.html'),
-      },
+    base: "lean-reader",
+    build: {
+        rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'index.html'),
+                reader: resolve(__dirname, 'reader/index.html'),
+            },
+        },
     },
-  },
 })
