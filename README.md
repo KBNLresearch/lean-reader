@@ -1,7 +1,7 @@
 # Acceptatiecriteria
 
 (Ik wil)
-- Zelf ePub bestanden kunnen uploaden, bekijken in de reader en verwijderen / overschrijven
+- Zelf ePub bestanden kunnen toevoegen aan, bekijken in en verwijderen van de reader
 - In de edge browser uit alle Nederlandstalige stemmen kunnen kiezen
 - Kunnen aanklikken waar er wordt begonnen met voorlezen
 - Automatisch doorbladeren wanneer de voorlezer een volgende 'bladzijde' heeft bereikt
