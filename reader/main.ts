@@ -43,6 +43,7 @@ async function initVoices() {
       }
       voiceSelect.addEventListener("change", (ev) => {
         const voice = voices[parseInt((ev.target as HTMLOptionElement).value)];
+        navigator.stop()
         navigator.setVoice(voice)
         localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
       })
@@ -95,19 +96,9 @@ function onPlayButtonClicked() {
   }
 }
 
-function handlePositionChange(utteranceIndices : number[]) {
-  navigator.stop();
-  if (utteranceIndices.length === 1) {
-    utteranceIndex = utteranceIndices[0];
-  } else if (utteranceIndices.length > 1) {
-    utteranceIndex = utteranceIndices[1];
-  } else {
-    utteranceIndex = -1;
-  }
-}
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+//  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
@@ -199,54 +190,65 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          documentTextNodes = gatherAndPrepareTextNodes(wnd);
-          navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
-              id: `${idx}`,
-              text: dtn.utteranceStr
-          })));
+          console.warn("--frame loaded---", wnd);
+
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
           console.log("positionChanged locator=", locator)
-          document.querySelectorAll("iframe").forEach((fr) => {
+          console.warn("--position changed ---");
+          document.querySelectorAll("iframe").forEach((fr, idx) => {
             if (fr.style.visibility != "hidden") {
+              console.log(`iframe being used (${idx}): `, fr);
               const navWnd = (fr as HTMLIFrameElement).contentWindow;
-              const utteranceIndices = documentTextNodes.map((dtn, idx) => {
-                  if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
-                      return idx;
-                  }
-                  return -1;
-              }).filter((idx) => idx > -1);
-              handlePositionChange(utteranceIndices)
+
+              documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
+              navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+                  id: `${idx}`,
+                  text: dtn.utteranceStr
+              })));
+              if (documentTextNodes.length > 0) {
+                utteranceIndex = 0;
+              } else {
+                utteranceIndex = -1;
+              }
+              
+              // const utteranceIndices = documentTextNodes.map((dtn, idx) => {
+              //     if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
+              //         return idx;
+              //     }
+              //     return -1;
+              // }).filter((idx) => idx > -1);
+              // handlePositionChange(utteranceIndices)
             }
           });
         },
         tap: function (e: FrameClickEvent): boolean {
-          console.log("tap e=", e )
+            console.log("tap e=", e )
           return true;
         },
         click: function (e: FrameClickEvent): boolean {
-          console.log("click e=", e)
+            console.log("click e=", e)
           return true;
         },
         zoom: function (scale: number): void {
-          console.log("zoom scale=", scale)
+            console.log("zoom scale=", scale)
         },
         miscPointer: function (amount: number): void {
-          console.log("miscPointer amount=", amount)
+            console.log("miscPointer amount=", amount)
         },
         scroll: function (delta: number): void {
-          console.log("scroll delta=", delta)
+            console.log("scroll delta=", delta)
         },
         customEvent: function (key: string, data: unknown): void {
-          console.log("customEvent key=", key, "data=", data)
+            console.log("customEvent key=", key, "data=", data)
         },
         handleLocator: function (locator: Locator): boolean {
-          console.log("handleLocator locator=", locator);
+            console.log("handleLocator locator=", locator);
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-          console.log("textSelected selection=", selection)
+            console.log("textSelected selection=", selection)
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
