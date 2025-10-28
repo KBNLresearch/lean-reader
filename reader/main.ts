@@ -252,7 +252,10 @@ async function init(bookId: string) {
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
+      const editor = nav.preferencesEditor;
       await nav.load();
+      editor.scroll.toggle();
+      nav.submitPreferences(editor.preferences)
 
     })
     // .catch((error) => {
