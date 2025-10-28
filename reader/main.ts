@@ -112,7 +112,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
     case "ready":
     case "idle":
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "⏵︎";      
+      playButton.innerHTML = "⏵︎";
       clearHighlights();
       break
     case "paused":
@@ -197,6 +197,7 @@ async function init(bookId: string) {
           hideLoadingMessage();
           console.log("positionChanged locator=", locator)
           console.warn("--position changed ---");
+          navigator.stop();
           document.querySelectorAll("iframe").forEach((fr, idx) => {
             if (fr.style.visibility != "hidden") {
               console.log(`iframe being used (${idx}): `, fr);
@@ -207,19 +208,18 @@ async function init(bookId: string) {
                   id: `${idx}`,
                   text: dtn.utteranceStr
               })));
-              if (documentTextNodes.length > 0) {
-                utteranceIndex = 0;
+              const utteranceIndices = documentTextNodes.map((dtn, idx) => {
+                  if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
+                      return idx;
+                  }
+                  return -1;
+              }).filter((idx) => idx > -1);
+
+              if (utteranceIndices.length > 0) {
+                utteranceIndex = utteranceIndices[0];
               } else {
                 utteranceIndex = -1;
               }
-              
-              // const utteranceIndices = documentTextNodes.map((dtn, idx) => {
-              //     if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
-              //         return idx;
-              //     }
-              //     return -1;
-              // }).filter((idx) => idx > -1);
-              // handlePositionChange(utteranceIndices)
             }
           });
         },
@@ -270,3 +270,5 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Er mist een boek ID");
   }
 });
+
+window.addEventListener("unload", () => navigator.stop())
