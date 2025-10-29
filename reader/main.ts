@@ -102,23 +102,23 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "⏸︎";
+      playButton.innerHTML = "◫";
       break;
     case "loading":
       playButton.setAttribute("disabled", "disabled");
-      playButton.innerHTML = "⏵︎";
+      playButton.innerHTML = "▶";
       clearHighlights();
       break;
     case "ready":
     case "idle":
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "⏵︎";
+      playButton.innerHTML = "▶";
       clearHighlights();
       break
     case "paused":
     default:
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "⏵︎";
+      playButton.innerHTML = "▶";
   }
   if (type === "boundary" && navigator.getState() === "playing") {
     const { charIndex, charLength, name } = detail;
