@@ -98,7 +98,7 @@ function onPlayButtonClicked() {
 
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-//  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
