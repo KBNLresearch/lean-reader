@@ -102,23 +102,22 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "◫";
+      playButton.querySelector("img")?.setAttribute("src", "../icons/pause.svg")
       break;
     case "loading":
       playButton.setAttribute("disabled", "disabled");
-      playButton.innerHTML = "▶";
+      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
       clearHighlights();
       break;
     case "ready":
     case "idle":
       playButton.removeAttribute("disabled");
-      playButton.innerHTML = "▶";
+      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
       clearHighlights();
       break
     case "paused":
     default:
-      playButton.removeAttribute("disabled");
-      playButton.innerHTML = "▶";
+      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   }
   if (type === "boundary" && navigator.getState() === "playing") {
     const { charIndex, charLength, name } = detail;
@@ -222,6 +221,16 @@ async function init(bookId: string) {
               }
             }
           });
+          if (nav.canGoForward) {
+            document.getElementById("next-page")!.style.visibility = "visible";
+          } else {
+            document.getElementById("next-page")!.style.visibility = "hidden";
+          }
+          if (nav.canGoBackward) {
+            document.getElementById("previous-page")!.style.visibility = "visible";
+          } else {
+            document.getElementById("previous-page")!.style.visibility = "hidden";
+          }
         },
         tap: function (e: FrameClickEvent): boolean {
             console.log("tap e=", e )
@@ -253,7 +262,8 @@ async function init(bookId: string) {
       };
       const nav = new EpubNavigator(container, publication, listeners);
       await nav.load();
-
+      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, console.log))
+      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, console.log))
     })
     // .catch((error) => {
     //   console.error("Error loading manifest", error);

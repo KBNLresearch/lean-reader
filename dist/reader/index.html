@@ -4,26 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lean-reader</title>
-    <script type="module" crossorigin src="/lean-reader/assets/reader-DcKLQKGT.js"></script>
-    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-C1xM_v2s.js">
-    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-DbzvCazv.css">
+    <script type="module" crossorigin src="/lean-reader/assets/reader-BedkkIAw.js"></script>
+    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-CVHk0kqY.js">
+    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-DimMiYrv.css">
     <link rel="stylesheet" crossorigin href="/lean-reader/assets/reader-VPRV0RAw.css">
   </head>
   <body>
     <header>
-        <a href="javascript:history.back()">⏴︎</a>
+        <a href="../" title="Terug naar overzicht">
+          <img src="../icons/arrow_back.svg" />
+        </a>
         <select id="voice-select">
         </select>
         <button id="play-readaloud" title="Afspelen met voorleesstem">
-          ▶
+          <img src="../icons/play.svg" />
         </button>
     </header>
     <div id="wrapper">
+      <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
+        <img src="../icons/arrow_back.svg" />
+      </button>
       <main id="container" aria-label="Publicatie">
         <div id="loading-message">
           Bezig met laden...
         </div>
       </main>
+      <button title="Volgende pagina" id="next-page" style="visibility: hidden">
+        <img src="../icons/arrow_forward.svg" />
+      </button>
     </div>
     <pre id="debug">
 

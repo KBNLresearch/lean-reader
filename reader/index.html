@@ -7,19 +7,27 @@
   </head>
   <body>
     <header>
-        <a href="javascript:history.back()">⏴︎</a>
+        <a href="../" title="Terug naar overzicht">
+          <img src="../icons/arrow_back.svg" />
+        </a>
         <select id="voice-select">
         </select>
         <button id="play-readaloud" title="Afspelen met voorleesstem">
-          ▶
+          <img src="../icons/play.svg" />
         </button>
     </header>
     <div id="wrapper">
+      <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
+        <img src="../icons/arrow_back.svg" />
+      </button>
       <main id="container" aria-label="Publicatie">
         <div id="loading-message">
           Bezig met laden...
         </div>
       </main>
+      <button title="Volgende pagina" id="next-page" style="visibility: hidden">
+        <img src="../icons/arrow_forward.svg" />
+      </button>
     </div>
     <pre id="debug">
 

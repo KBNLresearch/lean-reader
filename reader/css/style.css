@@ -69,21 +69,29 @@ header {
 }
 
 a {
-    color: var(--kb-link-black)
+    color: var(--kb-link-black);
 }
 
 a:hover {
     color: var(--kb-link-hover)
 }
 
+header a {
+    text-decoration: none;
+}
 
+header a > img,
+header button > img {
+    width: 12px;
+    height: 12px;
+}
 
 #wrapper {
     padding-top: var(--reader-header-height);
     height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) + 8px);
     height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) + 8px);
-    /* New browsers */
     display: flex;
+    width: 100%;
     margin: 0;
 }
 
@@ -106,6 +114,7 @@ ul#boek-entry-list li {
     contain: content;
     width: 100%;
     height: 100%;
+    flex-grow: 1;
 }
 
 .readium-navigator-iframe {
