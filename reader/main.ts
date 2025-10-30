@@ -16,10 +16,10 @@ import { detectPlatformFeatures } from './readium-speech/utils/patches';
 const debug = document.getElementById("debug")!;
 
 const pmc = {
-  debug: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  debug: (...args : any[]) => { console.debug(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
   log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  warn: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  error: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: red">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  warn: (...args : any[]) => { console.warn(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  error: (...args : any[]) => { console.error(args); debug.innerHTML += `<div style="color: red">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
 };
 
 let toggledDebug = false;
@@ -126,6 +126,27 @@ function setWordRects(wordRects : DOMRect[]) {
     hlDiv.style.height = `${rect.bottom - rect.top}px`;
     container.appendChild(hlDiv);
   });
+}
+
+function onPublicationClicked({x, y} : FrameClickEvent) {
+  pmc.debug(`Frame clicked at ${x}/${y}`);
+
+  documentTextNodes.forEach((dtn) => {
+//    pmc.debug(`${dtn.utteranceStr}`)
+    dtn.rangedTextNodes.forEach((rtn) => {
+      const range = new Range()
+      range.setStart(rtn.textNode, 0);
+      range.setEnd(rtn.textNode, rtn.textNode.textContent!.length - 1);
+      range.getClientRects()
+      for (let i = 0; i < range.getClientRects().length; i++) {
+        const rect = range.getClientRects().item(i);
+        if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
+          pmc.log("found: " + rtn.textNode.textContent);
+        }
+      }
+      //pmc.log(rtn.textNode, rtn.textNode.textContent)
+    })
+  })
 }
 
 function onPlayButtonClicked() {
@@ -289,11 +310,11 @@ async function init(bookId: string) {
           }
         },
         tap: function (e: FrameClickEvent): boolean {
-            pmc.debug("tap e=", e )
+          onPublicationClicked(e);
           return true;
         },
         click: function (e: FrameClickEvent): boolean {
-            pmc.debug("click e=", e)
+          onPublicationClicked(e)
           return true;
         },
         zoom: function (scale: number): void {
