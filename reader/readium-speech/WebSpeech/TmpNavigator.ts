@@ -21,7 +21,7 @@ export class WebSpeechReadAloudNavigator implements ReadiumSpeechNavigator {
   private async initializeEngine(): Promise<void> {
     if (this.engine instanceof WebSpeechEngine) {
       try {
-        await this.engine.initialize();
+        await this.engine.initialize({maxTimeout: 60000, interval: 10});
       } catch (error) {
         console.warn("Failed to initialize WebSpeechEngine:", error);
       }

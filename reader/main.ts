@@ -20,10 +20,14 @@ const navigator = new WebSpeechReadAloudNavigator()
 const playButton = document.getElementById("play-readaloud")!;
 const VOICE_URI_KEY = "voiceURI";
 let utteranceIndex = -1;
-
+let voicesInitialized = false;
 async function initVoices() {
+  if (voicesInitialized) {
+    return;
+  }
+  voicesInitialized = true;
   try {
-    const voices = (await navigator.getVoices()).filter(v => v.language.startsWith("nl"))
+    const voices =  (await navigator.getVoices()).filter(v => v.language.startsWith("nl"))
     const voiceSelect = document.getElementById("voice-select")!;
     voices.forEach((voice, idx) => {
       const opt = document.createElement("option");
@@ -44,7 +48,9 @@ async function initVoices() {
       voiceSelect.addEventListener("change", (ev) => {
         const voice = voices[parseInt((ev.target as HTMLOptionElement).value)];
         navigator.stop()
-        navigator.setVoice(voice)
+        const contentQueue = navigator.getContentQueue();
+        navigator.setVoice(voice);
+        navigator.loadContent(contentQueue || []);
         localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
       })
       if (voices.length === 1) {
@@ -60,7 +66,7 @@ async function initVoices() {
     console.error("Error initializing voices:", error);
   }
 }
-initVoices()
+navigator.on("ready", initVoices);
 
 
 const debug = document.getElementById("debug")!;
@@ -86,7 +92,7 @@ function setWordRects(wordRects : DOMRect[]) {
 }
 
 function onPlayButtonClicked() {
-  console.log(navigator.getState());
+  console.debug(navigator.getState());
   if (navigator.getState() === "playing") {
       navigator.pause()
   } else if (navigator.getState() === "paused") {
@@ -98,7 +104,7 @@ function onPlayButtonClicked() {
 
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-  console.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  console.debug(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
@@ -189,17 +195,16 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          console.warn("--frame loaded---", wnd);
+          console.debug("--frame loaded---", wnd);
 
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
-          console.log("positionChanged locator=", locator)
-          console.warn("--position changed ---");
+          console.debug("positionChanged locator=", locator)
           navigator.stop();
           document.querySelectorAll("iframe").forEach((fr, idx) => {
             if (fr.style.visibility != "hidden") {
-              console.log(`iframe being used (${idx}): `, fr);
+              console.debug(`iframe being used (${idx}): `, fr);
               const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
               documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
@@ -233,37 +238,37 @@ async function init(bookId: string) {
           }
         },
         tap: function (e: FrameClickEvent): boolean {
-            console.log("tap e=", e )
+            console.debug("tap e=", e )
           return true;
         },
         click: function (e: FrameClickEvent): boolean {
-            console.log("click e=", e)
+            console.debug("click e=", e)
           return true;
         },
         zoom: function (scale: number): void {
-            console.log("zoom scale=", scale)
+            console.debug("zoom scale=", scale)
         },
         miscPointer: function (amount: number): void {
-            console.log("miscPointer amount=", amount)
+            console.debug("miscPointer amount=", amount)
         },
         scroll: function (delta: number): void {
-            console.log("scroll delta=", delta)
+            console.debug("scroll delta=", delta)
         },
         customEvent: function (key: string, data: unknown): void {
-            console.log("customEvent key=", key, "data=", data)
+            console.debug("customEvent key=", key, "data=", data)
         },
         handleLocator: function (locator: Locator): boolean {
-            console.log("handleLocator locator=", locator);
+            console.debug("handleLocator locator=", locator);
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-            console.log("textSelected selection=", selection)
+            console.debug("textSelected selection=", selection)
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
       await nav.load();
-      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, console.log))
-      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, console.log))
+      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, console.debug))
+      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, console.debug))
     })
     // .catch((error) => {
     //   console.error("Error loading manifest", error);
