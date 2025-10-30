@@ -11,6 +11,9 @@ import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
 import { gatherAndPrepareTextNodes, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
+import { detectPlatformFeatures } from './readium-speech/utils/patches';
+
+const { isAndroid, isFirefox } = detectPlatformFeatures()
 
 function hideLoadingMessage() {
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
@@ -107,7 +110,14 @@ function setWordRects(wordRects : DOMRect[]) {
 function onPlayButtonClicked() {
   console.debug(navigator.getState());
   if (navigator.getState() === "playing") {
-      navigator.pause()
+    if (isAndroid) {
+      navigator.stop()
+      const contentQueue = navigator.getContentQueue()
+      navigator.loadContent(contentQueue);
+      console.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+    } else {
+      navigator.pause();
+    }
   } else if (navigator.getState() === "paused") {
     navigator.play()
   } else if (utteranceIndex > -1) {
