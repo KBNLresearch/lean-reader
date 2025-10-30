@@ -56,6 +56,9 @@ export type DocumentTextNodesChunk = {
     utteranceStr: string
 }
 
+
+const injectTrailingSpaceAfterPeriod = (inStr : string) => inStr.replace(/\.$/, ". ")
+
 export function gatherAndPrepareTextNodes(wnd : Window): DocumentTextNodesChunk[] {
     const elems = getElementsWithOwnText(wnd);
     // first purge out the elements that are already accounted for because they are a child
@@ -72,7 +75,7 @@ export function gatherAndPrepareTextNodes(wnd : Window): DocumentTextNodesChunk[
                 (aggr, cur) => {
                     const parentStartCharIndex = aggr.length > 0 ? (
                                 aggr[aggr.length - 1].parentStartCharIndex +
-                                aggr[aggr.length - 1].textNode.textContent!.length
+                                injectTrailingSpaceAfterPeriod(aggr[aggr.length - 1].textNode.textContent!).length
                             ) : 0;
                     return aggr.concat({
                         textNode: cur,
@@ -81,7 +84,7 @@ export function gatherAndPrepareTextNodes(wnd : Window): DocumentTextNodesChunk[
                 }, [] as RangedTextNode[]
             ),
             utteranceStr: chnk.reduce((aggr, cur) => {
-                return aggr + cur.textContent
+                return aggr + injectTrailingSpaceAfterPeriod(cur.textContent!)
             }, "")
         }))
         .filter((chnk) => chnk.utteranceStr.trim().length > 0)
