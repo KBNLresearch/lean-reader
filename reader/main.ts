@@ -13,6 +13,28 @@ import { gatherAndPrepareTextNodes, isTextNodeVisible, type DocumentTextNodesChu
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
+const debug = document.getElementById("debug")!;
+
+const pmc = {
+  debug: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; },
+  log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>` },
+  warn: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>` },
+  error: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: red">${args}</div>` },
+};
+
+let toggledDebug = false;
+debug.addEventListener("click", () => {
+  if (toggledDebug) {
+    debug.style.height = "";
+    debug.style.overflow = "hidden";
+    toggledDebug = false
+  } else {
+    debug.style.height = "45%";
+    debug.style.overflow = "auto";
+    toggledDebug = true
+  }
+})
+
 const { isAndroid, isFirefox } = detectPlatformFeatures()
 
 function hideLoadingMessage() {
@@ -76,7 +98,7 @@ async function initVoices() {
     }
 
   } catch (error) {
-    console.error("Error initializing voices:", error);
+    pmc.error("Error initializing voices:", error);
       document.getElementById("no-voices-found")!.style.display = "inline";
       voiceSelect.style.display = "none";
       playButton.style.display = "none";
@@ -85,7 +107,6 @@ async function initVoices() {
 navigator.on("ready", initVoices);
 
 
-const debug = document.getElementById("debug")!;
 const container = document.getElementById("container")!;
 let documentTextNodes : DocumentTextNodesChunk[] = []
 
@@ -108,26 +129,34 @@ function setWordRects(wordRects : DOMRect[]) {
 }
 
 function onPlayButtonClicked() {
-  console.debug(navigator.getState());
+  pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid && isFirefox) {
       navigator.stop()
       const contentQueue = navigator.getContentQueue()
       navigator.loadContent(contentQueue);
-      console.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+      pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
     } else {
       navigator.pause();
     }
   } else if (navigator.getState() === "paused") {
-    navigator.play()
+    if (isAndroid && isFirefox) {
+      pmc.warn("FIXME: android+firefox should not reach this point now")
+    } else {
+      navigator.play()
+    }
   } else if (utteranceIndex > -1) {
-    navigator.jumpTo(utteranceIndex);
+    if (isAndroid && isFirefox) {
+      pmc.warn("FIXME: figure out android firefox problem here")
+    } else {
+      navigator.jumpTo(utteranceIndex);
+    }
   }
 }
 
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-  console.debug(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  pmc.debug(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
@@ -218,16 +247,16 @@ async function init(bookId: string) {
 
       const listeners : EpubNavigatorListeners = {
         frameLoaded: function (wnd: Window): void {
-          console.debug("--frame loaded---", wnd);
+          pmc.debug("--frame loaded---", wnd);
 
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
-          console.debug("positionChanged locator=", locator)
+          pmc.debug("positionChanged locator=", locator)
           navigator.stop();
           document.querySelectorAll("iframe").forEach((fr, idx) => {
             if (fr.style.visibility != "hidden") {
-              console.debug(`iframe being used (${idx}): `, fr);
+              pmc.debug(`iframe being used (${idx}): `, fr);
               const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
               documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
@@ -261,40 +290,40 @@ async function init(bookId: string) {
           }
         },
         tap: function (e: FrameClickEvent): boolean {
-            console.debug("tap e=", e )
+            pmc.debug("tap e=", e )
           return true;
         },
         click: function (e: FrameClickEvent): boolean {
-            console.debug("click e=", e)
+            pmc.debug("click e=", e)
           return true;
         },
         zoom: function (scale: number): void {
-            console.debug("zoom scale=", scale)
+            pmc.debug("zoom scale=", scale)
         },
         miscPointer: function (amount: number): void {
-            console.debug("miscPointer amount=", amount)
+            pmc.debug("miscPointer amount=", amount)
         },
         scroll: function (delta: number): void {
-            console.debug("scroll delta=", delta)
+            pmc.debug("scroll delta=", delta)
         },
         customEvent: function (key: string, data: unknown): void {
-            console.debug("customEvent key=", key, "data=", data)
+            pmc.debug("customEvent key=", key, "data=", data)
         },
         handleLocator: function (locator: Locator): boolean {
-            console.debug("handleLocator locator=", locator);
+            pmc.debug("handleLocator locator=", locator);
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-            console.debug("textSelected selection=", selection)
+            pmc.debug("textSelected selection=", selection)
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
       await nav.load();
-      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, console.debug))
-      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, console.debug))
+      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, pmc.debug))
+      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, pmc.debug))
     })
     // .catch((error) => {
-    //   console.error("Error loading manifest", error);
+    //   pmc.error("Error loading manifest", error);
     //   alert(`Failed loading manifest ${selfLink}`);
     // });
 }
@@ -305,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (bookId) {
     init(bookId);
   } else {
-    console.error("Er mist een boek ID");
+    pmc.error("Er mist een boek ID");
   }
 });
 
