@@ -110,7 +110,7 @@ function setWordRects(wordRects : DOMRect[]) {
 function onPlayButtonClicked() {
   console.debug(navigator.getState());
   if (navigator.getState() === "playing") {
-    if (isAndroid) {
+    if (isAndroid && isFirefox) {
       navigator.stop()
       const contentQueue = navigator.getContentQueue()
       navigator.loadContent(contentQueue);
