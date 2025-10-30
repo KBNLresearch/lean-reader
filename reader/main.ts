@@ -21,30 +21,34 @@ const playButton = document.getElementById("play-readaloud")!;
 const VOICE_URI_KEY = "voiceURI";
 let utteranceIndex = -1;
 let voicesInitialized = false;
+const voiceSelect = document.getElementById("voice-select")!;
+
 async function initVoices() {
   if (voicesInitialized) {
     return;
   }
   voicesInitialized = true;
   try {
-    const voices =  (await navigator.getVoices()).filter(v => v.language.startsWith("nl"))
-    const voiceSelect = document.getElementById("voice-select")!;
-    voices.forEach((voice, idx) => {
-      const opt = document.createElement("option");
-      opt.setAttribute("value", `${idx}`);
-      if (voice.voiceURI === localStorage.getItem(VOICE_URI_KEY)) {
-        opt.setAttribute("selected", "selected");
-      }
-      opt.innerHTML = `${voice.name} - ${voice.language}`
-      voiceSelect.appendChild(opt);
-    })
+    const unfilteredVoices = await navigator.getVoices();
+    const dutchVoices = (unfilteredVoices).filter(v => v.language.startsWith("nl"))
+    const voices = dutchVoices.length === 0 ? unfilteredVoices : dutchVoices;
     if (voices.length > 0) {
+      voices.forEach((voice, idx) => {
+        const opt = document.createElement("option");
+        opt.setAttribute("value", `${idx}`);
+        if (voice.voiceURI === localStorage.getItem(VOICE_URI_KEY)) {
+          opt.setAttribute("selected", "selected");
+        }
+        opt.innerHTML = `${voice.name} - ${voice.language}`
+        voiceSelect.appendChild(opt);
+      })
       const storedVoice = voices.find((v) => v.voiceURI === localStorage.getItem(VOICE_URI_KEY));
       if (storedVoice) {
         navigator.setVoice(storedVoice);
       } else {
         navigator.setVoice(voices[0])
       }
+      // FIXME: extract function
       voiceSelect.addEventListener("change", (ev) => {
         const voice = voices[parseInt((ev.target as HTMLOptionElement).value)];
         navigator.stop()
@@ -53,17 +57,26 @@ async function initVoices() {
         navigator.loadContent(contentQueue || []);
         localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
       })
+
+      document.getElementById("voices-are-pending")?.remove();
       if (voices.length === 1) {
         voiceSelect.setAttribute("disabled", "disabled");
+      } else {
+        voiceSelect.removeAttribute("disabled");
       }
-      playButton.addEventListener("click", onPlayButtonClicked)
+      playButton.addEventListener("click", onPlayButtonClicked);
+      playButton.style.display = "inline";
     } else {
+      document.getElementById("no-voices-found")!.style.display = "inline";
       voiceSelect.style.display = "none";
-      playButton.style.display = "none"
+      playButton.style.display = "none";
     }
 
   } catch (error) {
     console.error("Error initializing voices:", error);
+      document.getElementById("no-voices-found")!.style.display = "inline";
+      voiceSelect.style.display = "none";
+      playButton.style.display = "none";
   }
 }
 navigator.on("ready", initVoices);

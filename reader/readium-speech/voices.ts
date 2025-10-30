@@ -58,12 +58,10 @@ export async function getSpeechSynthesisVoices(maxTimeout = 10000, interval = 10
             // Prevent multiple starts
             if (pollingStarted) return;
             pollingStarted = true;
-            console.log(`polling for voices for ${maxTimeout / 1000}s`)
             const tick = () => {
                 // Resolve with empty array if no voices found
                 if (counter < 1) return resolve([]);
                 --counter;
-                console.log(`polling tick: ${counter}`)
                 const voices = a();
                 // Resolve if voices loaded
                 if (Array.isArray(voices) && voices.length) return resolve(voices);

@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lean-reader</title>
-    <script type="module" crossorigin src="/lean-reader/assets/reader-CN60GedJ.js"></script>
-    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-CVHk0kqY.js">
-    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-DimMiYrv.css">
+    <script type="module" crossorigin src="/lean-reader/assets/reader-CloaQTSV.js"></script>
+    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-Ce-Y_01V.js">
+    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-CQGObNTB.css">
     <link rel="stylesheet" crossorigin href="/lean-reader/assets/reader-VPRV0RAw.css">
   </head>
   <body>
@@ -14,11 +14,13 @@
         <a href="../" title="Terug naar overzicht">
           <img src="../icons/arrow_back.svg" />
         </a>
-        <select id="voice-select">
+        <select id="voice-select" disabled>
+          <option selected disabled id="voices-are-pending"> - Stemmen laden... -</option>
         </select>
-        <button id="play-readaloud" title="Afspelen met voorleesstem">
+        <button id="play-readaloud" title="Afspelen met voorleesstem" style="display: none;">
           <img src="../icons/play.svg" />
         </button>
+        <span id="no-voices-found">Geen voorleesstem gevonden!</span>
     </header>
     <div id="wrapper">
       <button title="Vorige pagina" id="previous-page" style="visibility: hidden">

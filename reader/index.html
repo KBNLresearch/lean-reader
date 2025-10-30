@@ -10,11 +10,13 @@
         <a href="../" title="Terug naar overzicht">
           <img src="../icons/arrow_back.svg" />
         </a>
-        <select id="voice-select">
+        <select id="voice-select" disabled>
+          <option selected disabled id="voices-are-pending"> - Stemmen laden... -</option>
         </select>
-        <button id="play-readaloud" title="Afspelen met voorleesstem">
+        <button id="play-readaloud" title="Afspelen met voorleesstem" style="display: none;">
           <img src="../icons/play.svg" />
         </button>
+        <span id="no-voices-found">Geen voorleesstem gevonden!</span>
     </header>
     <div id="wrapper">
       <button title="Vorige pagina" id="previous-page" style="visibility: hidden">

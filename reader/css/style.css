@@ -126,3 +126,8 @@ ul#boek-entry-list li {
 #voice-select {
     max-width: calc(100% - 90px);
 }
+
+#no-voices-found {
+    font-size: 0.8em;
+    display: none;
+}
