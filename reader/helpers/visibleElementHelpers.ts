@@ -14,8 +14,8 @@ export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
     return true;
 }
 
-export function getElementsWithOwnText(wnd : Window, currentElement? : Element, gathered? : HTMLElement[]): HTMLElement[] {
-    currentElement = currentElement ?? wnd.document.documentElement;
+export function getElementsWithOwnText(wnd : Window|null, currentElement? : Element, gathered? : HTMLElement[]): HTMLElement[] {
+    currentElement = currentElement ?? wnd!.document.documentElement;
     gathered = gathered ?? [];
 
     for (let idx = 0; idx < currentElement.childNodes.length; idx++) {

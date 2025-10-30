@@ -82,6 +82,7 @@ async function initVoices() {
         navigator.loadContent(contentQueue || []);
         localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
       })
+//      navigator.setRate(2.0)
 
       document.getElementById("voices-are-pending")?.remove();
       if (voices.length === 1) {
@@ -128,11 +129,10 @@ function setWordRects(wordRects : DOMRect[]) {
   });
 }
 
-function onPublicationClicked({x, y} : FrameClickEvent) {
+function onPublicationClicked({x, y} : {x: number, y : number}) {
   pmc.debug(`Frame clicked at ${x}/${y}`);
 
   documentTextNodes.forEach((dtn) => {
-//    pmc.debug(`${dtn.utteranceStr}`)
     dtn.rangedTextNodes.forEach((rtn) => {
       const range = new Range()
       range.setStart(rtn.textNode, 0);
@@ -141,6 +141,7 @@ function onPublicationClicked({x, y} : FrameClickEvent) {
       for (let i = 0; i < range.getClientRects().length; i++) {
         const rect = range.getClientRects().item(i);
         if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
+          pmc.debug(`UT: ${dtn.utteranceStr}`)
           pmc.log("found: " + rtn.textNode.textContent);
         }
       }
@@ -249,6 +250,9 @@ navigator.on("mark", handleWebSpeechNavigatorEvent);
 navigator.on("voiceschanged", handleWebSpeechNavigatorEvent);
 navigator.on("stop", handleWebSpeechNavigatorEvent);
 
+function handleIframeClick(e : any) {
+  onPublicationClicked({x:  e.x, y: e.y + container.clientTop});
+}
 
 async function init(bookId: string) {
   const publicationURL = `${import.meta.env.VITE_MANIFEST_SRC}/${bookId}/manifest.json`;
@@ -276,6 +280,8 @@ async function init(bookId: string) {
           navigator.stop();
           document.querySelectorAll("iframe").forEach((fr, idx) => {
             if (fr.style.visibility != "hidden") {
+              fr.contentWindow?.removeEventListener("click", handleIframeClick);
+              fr.contentWindow?.addEventListener("click", handleIframeClick)
               pmc.debug(`iframe being used (${idx}): `, fr);
               const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
@@ -310,11 +316,11 @@ async function init(bookId: string) {
           }
         },
         tap: function (e: FrameClickEvent): boolean {
-          onPublicationClicked(e);
+          pmc.debug("tap e=", e)
           return true;
         },
         click: function (e: FrameClickEvent): boolean {
-          onPublicationClicked(e)
+          pmc.debug("click e=", e)
           return true;
         },
         zoom: function (scale: number): void {
