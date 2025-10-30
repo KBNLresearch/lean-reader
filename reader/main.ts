@@ -16,10 +16,10 @@ import { detectPlatformFeatures } from './readium-speech/utils/patches';
 const debug = document.getElementById("debug")!;
 
 const pmc = {
-  debug: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; },
-  log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>` },
-  warn: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>` },
-  error: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: red">${args}</div>` },
+  debug: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  warn: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  error: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: red">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
 };
 
 let toggledDebug = false;
