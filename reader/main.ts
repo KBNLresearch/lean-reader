@@ -148,9 +148,8 @@ function onPlayButtonClicked() {
   } else if (utteranceIndex > -1) {
     if (isAndroid && isFirefox) {
       pmc.warn("FIXME: figure out android firefox problem here")
-    } else {
-      navigator.jumpTo(utteranceIndex);
     }
+    navigator.jumpTo(utteranceIndex);
   }
 }
 
