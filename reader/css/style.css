@@ -22,7 +22,7 @@
     --kb-link-hover: #A5112B;
     --kb-link-inactive: #7A847F;
     --kb-link-black: #333333;
-    --reader-header-inner-height: 16px;
+    --reader-header-inner-height: 24px;
     --reader-footer-inner-height: 16px;
     --reader-header-padding: 1em;
     --reader-footer-padding: 1em;
@@ -60,6 +60,12 @@ header {
 header {
     padding: var(--reader-header-padding);
     height: var(--reader-header-inner-height);
+    display: flex;
+}
+
+header h1 {
+    height: 100%;
+    font-size: 1.5em;
 }
 
 #debug {
@@ -80,11 +86,72 @@ header a {
     text-decoration: none;
 }
 
-header a > img,
-header button > img {
-    width: 12px;
-    height: 12px;
+header button,
+header select,
+header a,
+header span {
+    height: 100%;
+    display: inline-block;
+    border-radius: 0;
+    border-width: 1px;
+    border-color: black;
 }
+
+header button {
+    border-radius: 4px;
+}
+
+header button:hover {
+    outline: 1px solid var(--kb-link-active);
+}
+
+header button:hover>img {
+    filter: invert(14%) sepia(25%) saturate(7340%) hue-rotate(219deg) brightness(86%) contrast(117%);
+}
+
+
+header a>img,
+header button>img {
+    margin-top: 2px;
+    height: calc(100% - 4px);
+}
+
+header span#rate-percentage {
+    padding: 3px;
+    height: calc(100% - 8px);
+    border: 1px solid var(--kb-gray3);
+    background-color: var(--kb-web-gray);
+    cursor: default;
+    user-select: none;
+}
+
+header #voice-select {
+    max-width: calc(100% - 160px);
+}
+
+header #play-readaloud {
+    margin-right: 1em;
+    margin-left: 0.25em;
+}
+
+header #rate-slower,
+header #rate-faster {
+    padding-inline-start: 2px;
+    padding-inline-end: 2px;
+}
+
+header #rate-slower {
+    border-right: none;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+header #rate-faster {
+    border-left: none;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
 
 #wrapper {
     padding-top: var(--reader-header-height);
@@ -118,13 +185,9 @@ ul#boek-entry-list li {
 }
 
 .readium-navigator-iframe {
-  width: 100%;
-  height: 100%;
-  border-width: 0;
-}
-
-#voice-select {
-    max-width: calc(100% - 90px);
+    width: 100%;
+    height: 100%;
+    border-width: 0;
 }
 
 #no-voices-found {
