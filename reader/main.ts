@@ -5,7 +5,7 @@ import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk, type RangedTextNode } from './helpers/visibleElementHelpers';
+import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
@@ -15,6 +15,9 @@ function logToStupidPreBlock(color : string, ...args : any[]) {
   const dv = document.createElement("div");
   dv.style.color = color;
   dv.innerHTML = args.map((arg : any) => {
+    if (typeof arg === "string") {
+      return arg;
+    }
     try {
       return JSON.stringify(arg);
     } catch (e) {
@@ -28,7 +31,7 @@ function logToStupidPreBlock(color : string, ...args : any[]) {
 const pmc = {
   debug: (...args : any[]) => { console.debug(...args); logToStupidPreBlock("gray", ...args) },
   log: (...args : any[]) => { console.log(...args); logToStupidPreBlock("black", ...args) },
-  warn: (...args : any[]) => { console.warn(...args); logToStupidPreBlock("dark-yellow", ...args) },
+  warn: (...args : any[]) => { console.warn(...args); logToStupidPreBlock("darkorange", ...args) },
   error: (...args : any[]) => { console.error(...args); logToStupidPreBlock("red", ...args) },
 };
 
@@ -163,61 +166,33 @@ function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositi
   return {found : false, rangedTextNodeIndex: -1, documentTextNodeChunkIndex: -1, wordCharPos: -1};
 }
 
+
 function breakUpUtterancesAt({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
   if (documentTextNodeChunkIndex < 0 || rangedTextNodeIndex < 0 || wordCharPos < 0) { return }
-    pmc.log(`found: "${documentTextNodes[documentTextNodeChunkIndex].rangedTextNodes[rangedTextNodeIndex].textNode.textContent!.substring(wordCharPos)}"`, documentTextNodeChunkIndex, rangedTextNodeIndex, wordCharPos)
+  pmc.log(`found: "${documentTextNodes[documentTextNodeChunkIndex].rangedTextNodes[rangedTextNodeIndex].textNode.textContent!.substring(wordCharPos)}"`, documentTextNodeChunkIndex, rangedTextNodeIndex, wordCharPos)
 
+  utteranceIndex = documentTextNodeChunkIndex;
   let newDocumentTextNodes : DocumentTextNodesChunk[] = [];
   for (let dtnIdx = 0; dtnIdx < documentTextNodeChunkIndex; dtnIdx++) {
     newDocumentTextNodes.push(documentTextNodes[dtnIdx]);
   }
 
-  // const dtn = documentTextNodes[documentTextNodeChunkIndex];
-  // if (rangedTextNodeIndex > 0) {
-  //   const injectedDtnBefore : DocumentTextNodesChunk = { rangedTextNodes: [], utteranceStr: ''}
-  //   for (let rtnIdx = 0; rtnIdx < rangedTextNodeIndex; rtnIdx++) {
-      
-  //   }
-  // }
+  const dtn = documentTextNodes[documentTextNodeChunkIndex];
+  const rtn = dtn.rangedTextNodes[rangedTextNodeIndex];
+  const utChIdx = rtn.parentStartCharIndex + wordCharPos
+  
+  const utteranceStrBefore = dtn.utteranceStr.substring(0, utChIdx - 1);
+  const utteranceStrAfter = dtn.utteranceStr.substring(utChIdx, dtn.utteranceStr.length - 1);
+  pmc.warn(`TODO: do not throw away the utteranceStrBefore, inject the spaces elsewhere: "${utteranceStrBefore}"`)
+  utteranceIndex = documentTextNodeChunkIndex
+  documentTextNodes[documentTextNodeChunkIndex].utteranceStr = " ".repeat(utChIdx) + utteranceStrAfter
+  navigator.stop()
+  navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+      id: `${idx}`,
+      text: dtn.utteranceStr
+  })));
+  navigator.jumpTo(utteranceIndex);
 
-  // const replacementDtn : DocumentTextNodesChunk = { rangedTextNodes: [], utteranceStr: ''}
-  // let parentStartIdx = 0;
-  // if (rangedTextNodeIndex + 1 < dtn.rangedTextNodes.length) {
-  //   for (let rtnIdx = rangedTextNodeIndex + 1; rtnIdx < dtn.rangedTextNodes.length; rtnIdx++) {
-  //     const newRtn : RangedTextNode = {
-  //       textNode: dtn.rangedTextNodes[t],
-  //       parentStartCharIndex: 0
-  //     }
-  //     replacementDtn.rangedTextNodes.push(dtn.rangedTextNodes[rtnIdx]);
-  //     replacementDtn.utteranceStr += dtn.rangedTextNodes[rtnIdx].textNode!.textContent
-  //   }
-  // }
-
-  // newDocumentTextNodes.push(replacementDtn);
-
-  for (let dtnIdx = documentTextNodeChunkIndex + 1; dtnIdx < documentTextNodes.length; dtnIdx++) {
-    newDocumentTextNodes.push(documentTextNodes[dtnIdx]);
-  }
-
-  console.log("in:  ", documentTextNodes.length, documentTextNodes);
-  console.log("out: ", newDocumentTextNodes.length, newDocumentTextNodes);
-
-              // navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
-              //     id: `${idx}`,
-              //     text: dtn.utteranceStr
-              // })));
-              // const utteranceIndices = documentTextNodes.map((dtn, idx) => {
-              //     if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
-              //         return idx;
-              //     }
-              //     return -1;
-              // }).filter((idx) => idx > -1);
-
-              // if (utteranceIndices.length > 0) {
-              //   utteranceIndex = utteranceIndices[0];
-              // } else {
-              //   utteranceIndex = -1;
-              // }
 }
 
 
