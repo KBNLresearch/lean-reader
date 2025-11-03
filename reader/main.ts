@@ -158,6 +158,7 @@ function reloadContentQueue() {
     navigator.stop()
     const contentQueue = navigator.getContentQueue()
     navigator.loadContent(contentQueue);
+    navigator.stop()
 }
 
 
