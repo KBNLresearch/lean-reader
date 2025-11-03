@@ -174,6 +174,7 @@ function onPlayButtonClicked() {
   pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid && isFirefox) {
+      reloadContentQueue()
       pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
     } else {
       navigator.pause();
