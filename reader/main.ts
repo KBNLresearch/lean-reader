@@ -177,8 +177,8 @@ function onPlayButtonClicked() {
       pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
     } else {
       navigator.pause();
-
     }
+    playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   } else if (navigator.getState() === "paused") {
     if (isAndroid && isFirefox) {
       pmc.warn("FIXME: android+firefox should not reach this point now")
