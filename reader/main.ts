@@ -5,7 +5,7 @@ import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
+import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk, type RangedTextNode } from './helpers/visibleElementHelpers';
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
@@ -141,14 +141,14 @@ function setWordRects(wordRects : DOMRect[]) {
   });
 }
 
-type WordPositionWithDocumentTextNodeMetadata = {
+type WordPositionInfo = {
   found : boolean
-  rtnIdx : number
-  dtnIdx : number
+  rangedTextNodeIndex : number
+  documentTextNodeChunkIndex : number
   wordCharPos : number
 }
 
-function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionWithDocumentTextNodeMetadata {
+function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
 
   for (let dtnIdx = 0; dtnIdx < documentTextNodes.length; dtnIdx++) {
     const dtn = documentTextNodes[dtnIdx];
@@ -156,18 +156,80 @@ function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositi
       const rtn = dtn.rangedTextNodes[rtnIdx];
       const wordCharPos = getWordCharPosAtXY(x, y, rtn.textNode);
       if (wordCharPos > -1) {
-        return {found: true, rtnIdx: rtnIdx, dtnIdx: dtnIdx, wordCharPos: wordCharPos}
+        return {found: true, rangedTextNodeIndex: rtnIdx, documentTextNodeChunkIndex: dtnIdx, wordCharPos: wordCharPos}
       }
     };
   }
-  return {found : false, rtnIdx: -1, dtnIdx: -1, wordCharPos: -1};
+  return {found : false, rangedTextNodeIndex: -1, documentTextNodeChunkIndex: -1, wordCharPos: -1};
 }
+
+function breakUpUtterancesAt({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
+  if (documentTextNodeChunkIndex < 0 || rangedTextNodeIndex < 0 || wordCharPos < 0) { return }
+    pmc.log(`found: "${documentTextNodes[documentTextNodeChunkIndex].rangedTextNodes[rangedTextNodeIndex].textNode.textContent!.substring(wordCharPos)}"`, documentTextNodeChunkIndex, rangedTextNodeIndex, wordCharPos)
+
+  let newDocumentTextNodes : DocumentTextNodesChunk[] = [];
+  for (let dtnIdx = 0; dtnIdx < documentTextNodeChunkIndex; dtnIdx++) {
+    newDocumentTextNodes.push(documentTextNodes[dtnIdx]);
+  }
+
+  // const dtn = documentTextNodes[documentTextNodeChunkIndex];
+  // if (rangedTextNodeIndex > 0) {
+  //   const injectedDtnBefore : DocumentTextNodesChunk = { rangedTextNodes: [], utteranceStr: ''}
+  //   for (let rtnIdx = 0; rtnIdx < rangedTextNodeIndex; rtnIdx++) {
+      
+  //   }
+  // }
+
+  // const replacementDtn : DocumentTextNodesChunk = { rangedTextNodes: [], utteranceStr: ''}
+  // let parentStartIdx = 0;
+  // if (rangedTextNodeIndex + 1 < dtn.rangedTextNodes.length) {
+  //   for (let rtnIdx = rangedTextNodeIndex + 1; rtnIdx < dtn.rangedTextNodes.length; rtnIdx++) {
+  //     const newRtn : RangedTextNode = {
+  //       textNode: dtn.rangedTextNodes[t],
+  //       parentStartCharIndex: 0
+  //     }
+  //     replacementDtn.rangedTextNodes.push(dtn.rangedTextNodes[rtnIdx]);
+  //     replacementDtn.utteranceStr += dtn.rangedTextNodes[rtnIdx].textNode!.textContent
+  //   }
+  // }
+
+  // newDocumentTextNodes.push(replacementDtn);
+
+  for (let dtnIdx = documentTextNodeChunkIndex + 1; dtnIdx < documentTextNodes.length; dtnIdx++) {
+    newDocumentTextNodes.push(documentTextNodes[dtnIdx]);
+  }
+
+  console.log("in:  ", documentTextNodes.length, documentTextNodes);
+  console.log("out: ", newDocumentTextNodes.length, newDocumentTextNodes);
+
+              // navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+              //     id: `${idx}`,
+              //     text: dtn.utteranceStr
+              // })));
+              // const utteranceIndices = documentTextNodes.map((dtn, idx) => {
+              //     if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
+              //         return idx;
+              //     }
+              //     return -1;
+              // }).filter((idx) => idx > -1);
+
+              // if (utteranceIndices.length > 0) {
+              //   utteranceIndex = utteranceIndices[0];
+              // } else {
+              //   utteranceIndex = -1;
+              // }
+}
+
 
 function onPublicationClicked({x, y} : {x: number, y : number}) {
   pmc.log(`Frame clicked at ${x}/${y}`);
-  const { found, rtnIdx, dtnIdx, wordCharPos } = findClickedOnWordPosition({x, y});
-  if (found) {
-      pmc.log(`found: "${documentTextNodes[dtnIdx].rangedTextNodes[rtnIdx].textNode.textContent!.substring(wordCharPos)}"`, dtnIdx, rtnIdx, wordCharPos)
+  const result = findClickedOnWordPosition({x, y});
+  if (result.found) {
+      if (result.rangedTextNodeIndex === 0 && result.wordCharPos === 0) {
+        navigator.jumpTo(result.documentTextNodeChunkIndex);
+      } else {
+        breakUpUtterancesAt(result);
+      }
   }
 }
 
