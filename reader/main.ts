@@ -1,11 +1,7 @@
 import './css/style.css';
 import './css/highlighting.css';
 import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
-// import Peripherals from './peripherals';
-// import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
-// import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
 import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
-// import { Locator, Manifest, Publication } from "@readium/shared";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
@@ -15,22 +11,34 @@ import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
 const debug = document.getElementById("debug")!;
 
+function logToStupidPreBlock(color : string, ...args : any[]) {
+  const dv = document.createElement("div");
+  dv.style.color = color;
+  dv.innerHTML = args.map((arg : any) => {
+    try {
+      return JSON.stringify(arg);
+    } catch (e) {
+      return arg;
+    }
+  }).join(", ")
+  debug.appendChild(dv);
+  debug.scrollTo(0, debug.scrollHeight)
+}
+
 const pmc = {
-  debug: (...args : any[]) => { console.debug(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  warn: (...args : any[]) => { console.warn(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  error: (...args : any[]) => { console.error(args); debug.innerHTML += `<div style="color: red">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  debug: (...args : any[]) => { console.debug(...args); logToStupidPreBlock("gray", ...args) },
+  log: (...args : any[]) => { console.log(...args); logToStupidPreBlock("black", ...args) },
+  warn: (...args : any[]) => { console.warn(...args); logToStupidPreBlock("dark-yellow", ...args) },
+  error: (...args : any[]) => { console.error(...args); logToStupidPreBlock("red", ...args) },
 };
 
 let toggledDebug = false;
 debug.addEventListener("click", () => {
   if (toggledDebug) {
     debug.style.height = "";
-    debug.style.overflow = "hidden";
     toggledDebug = false
   } else {
     debug.style.height = "45%";
-    debug.style.overflow = "auto";
     toggledDebug = true
   }
 })
@@ -197,7 +205,7 @@ function onPlayButtonClicked() {
 
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-  pmc.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  pmc.debug(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
