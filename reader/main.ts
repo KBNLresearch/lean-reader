@@ -5,7 +5,7 @@ import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { gatherAndPrepareTextNodes, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
+import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
@@ -142,22 +142,14 @@ function setWordRects(wordRects : DOMRect[]) {
 }
 
 function onPublicationClicked({x, y} : {x: number, y : number}) {
-  pmc.debug(`Frame clicked at ${x}/${y}`);
+  pmc.log(`Frame clicked at ${x}/${y}`);
 
-  documentTextNodes.forEach((dtn) => {
-    dtn.rangedTextNodes.forEach((rtn) => {
-      const range = new Range()
-      range.setStart(rtn.textNode, 0);
-      range.setEnd(rtn.textNode, rtn.textNode.textContent!.length - 1);
-      range.getClientRects()
-      for (let i = 0; i < range.getClientRects().length; i++) {
-        const rect = range.getClientRects().item(i);
-        if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
-          pmc.debug(`UT: ${dtn.utteranceStr}`)
-          pmc.log("found: " + rtn.textNode.textContent);
-        }
+  documentTextNodes.forEach((dtn, dtnIdx) => {
+    dtn.rangedTextNodes.forEach((rtn, rtnIdx) => {
+      const wordCharPos = getWordCharPosAtXY(x, y, rtn.textNode);
+      if (wordCharPos > -1) {
+        pmc.log("found: ", rtn.textNode.textContent, dtnIdx, rtnIdx, wordCharPos)
       }
-      //pmc.log(rtn.textNode, rtn.textNode.textContent)
     })
   })
 }
@@ -368,7 +360,7 @@ async function init(bookId: string) {
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-            pmc.debug("textSelected selection=", selection)
+            pmc.log("textSelected selection=", selection)
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
