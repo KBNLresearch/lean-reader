@@ -10,7 +10,6 @@ export interface ReadiumSpeechPlaybackEngine {
   setVoice(voice: ReadiumSpeechVoice | string): void;
   getCurrentVoice(): ReadiumSpeechVoice | null;
   getAvailableVoices(): Promise<ReadiumSpeechVoice[]>;
-  
   // Playback Control
   speak(utteranceIndex?: number): void;
   pause(): void;
@@ -26,6 +25,7 @@ export interface ReadiumSpeechPlaybackEngine {
   getState(): ReadiumSpeechPlaybackState;
   getCurrentUtteranceIndex(): number;
   getUtteranceCount(): number;
+  getRate(): number;
   
   // Events
   on(
