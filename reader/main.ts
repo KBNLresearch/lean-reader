@@ -44,6 +44,8 @@ function hideLoadingMessage() {
 const navigator = new WebSpeechReadAloudNavigator()
 const playButton = document.getElementById("play-readaloud")!;
 const rateSlowerButton = document.getElementById("rate-slower")!;
+const rateFasterButton = document.getElementById("rate-faster")!;
+const rateNormalButton = document.getElementById("rate-percentage")!;
 const VOICE_URI_KEY = "voiceURI";
 let utteranceIndex = -1;
 let voicesInitialized = false;
@@ -92,6 +94,9 @@ async function initVoices() {
         voiceSelect.removeAttribute("disabled");
       }
       playButton.addEventListener("click", onPlayButtonClicked);
+      rateFasterButton.addEventListener("click", () => adjustPlaybackRate(navigator.getPlaybackRate() + 0.25));
+      rateSlowerButton.addEventListener("click", () => adjustPlaybackRate(navigator.getPlaybackRate() - 0.25));
+      rateNormalButton.addEventListener("click", () => adjustPlaybackRate(1.0));
       document.querySelectorAll(".readaloud-control").forEach((el) => { (el as HTMLElement).style.display = "inline-block"; })
     } else {
       document.getElementById("no-voices-found")!.style.display = "inline";
@@ -149,13 +154,26 @@ function onPublicationClicked({x, y} : {x: number, y : number}) {
   })
 }
 
+function reloadContentQueue() {
+    navigator.stop()
+    const contentQueue = navigator.getContentQueue()
+    navigator.loadContent(contentQueue);
+}
+
+
+function adjustPlaybackRate(newRate : number) {
+  if (newRate > 0.0 && newRate <= 2.0) {
+    navigator.setRate(newRate);
+    rateNormalButton.innerHTML = `${Math.floor(navigator.getPlaybackRate() * 100)}%`;
+    reloadContentQueue();
+    pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+  }
+}
+
 function onPlayButtonClicked() {
   pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid && isFirefox) {
-      navigator.stop()
-      const contentQueue = navigator.getContentQueue()
-      navigator.loadContent(contentQueue);
       pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
     } else {
       navigator.pause();

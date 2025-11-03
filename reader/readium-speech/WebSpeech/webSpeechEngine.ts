@@ -49,6 +49,9 @@ export class WebSpeechEngine implements ReadiumSpeechPlaybackEngine {
     this.speechSynthesis = this.features.speechSynthesis;
     this.speechSynthesisUtterance = this.features.speechSynthesisUtterance;
   }
+  getRate(): number {
+    return this.rate;
+  }
 
   // From Easy Speech,
   // Check infinity pattern for long texts (except on problematic platforms)

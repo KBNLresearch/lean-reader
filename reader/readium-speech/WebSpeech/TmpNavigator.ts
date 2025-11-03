@@ -127,6 +127,10 @@ export class WebSpeechReadAloudNavigator implements ReadiumSpeechNavigator {
     return [...this.contentQueue];
   }
 
+  getPlaybackRate(): number {
+    return this.engine.getRate()
+  }
+
   private getCurrentUtteranceIndex(): number {
     return this.engine.getCurrentUtteranceIndex();
   }
