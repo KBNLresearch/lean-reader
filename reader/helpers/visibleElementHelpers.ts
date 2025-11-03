@@ -1,5 +1,5 @@
 // export const UNICODE_NON_WORD_REGEX = /[^\p{Letter}\p{Number}]+/ug
-export const UNICODE_WORD_REGEX = /[^\p{Letter}\p{Number}]+/ug
+export const UNICODE_WORD_REGEX = /[\p{Letter}\p{Number}]+/ug
 
 export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
     const range = new Range();
@@ -103,7 +103,6 @@ export function getWordCharPosAtXY(x : number, y : number, textNode : Node) : nu
         wordPositions.push(m.index)
     }
     wordPositions.push(textNode.textContent.length - 1)
-    console.log(wordPositions, textNode.textContent)
 
     for (let wIdx = 0; wIdx < wordPositions.length - 1; wIdx++) {
         const range = new Range()

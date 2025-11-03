@@ -141,17 +141,34 @@ function setWordRects(wordRects : DOMRect[]) {
   });
 }
 
-function onPublicationClicked({x, y} : {x: number, y : number}) {
-  pmc.log(`Frame clicked at ${x}/${y}`);
+type WordPositionWithDocumentTextNodeMetadata = {
+  found : boolean
+  rtnIdx : number
+  dtnIdx : number
+  wordCharPos : number
+}
 
-  documentTextNodes.forEach((dtn, dtnIdx) => {
-    dtn.rangedTextNodes.forEach((rtn, rtnIdx) => {
+function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionWithDocumentTextNodeMetadata {
+
+  for (let dtnIdx = 0; dtnIdx < documentTextNodes.length; dtnIdx++) {
+    const dtn = documentTextNodes[dtnIdx];
+    for (let rtnIdx = 0; rtnIdx < dtn.rangedTextNodes.length; rtnIdx++) {
+      const rtn = dtn.rangedTextNodes[rtnIdx];
       const wordCharPos = getWordCharPosAtXY(x, y, rtn.textNode);
       if (wordCharPos > -1) {
-        pmc.log("found: ", rtn.textNode.textContent, dtnIdx, rtnIdx, wordCharPos)
+        return {found: true, rtnIdx: rtnIdx, dtnIdx: dtnIdx, wordCharPos: wordCharPos}
       }
-    })
-  })
+    };
+  }
+  return {found : false, rtnIdx: -1, dtnIdx: -1, wordCharPos: -1};
+}
+
+function onPublicationClicked({x, y} : {x: number, y : number}) {
+  pmc.log(`Frame clicked at ${x}/${y}`);
+  const { found, rtnIdx, dtnIdx, wordCharPos } = findClickedOnWordPosition({x, y});
+  if (found) {
+      pmc.log(`found: "${documentTextNodes[dtnIdx].rangedTextNodes[rtnIdx].textNode.textContent!.substring(wordCharPos)}"`, dtnIdx, rtnIdx, wordCharPos)
+  }
 }
 
 function reloadContentQueue() {
