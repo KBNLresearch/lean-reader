@@ -1,41 +1,52 @@
 import './css/style.css';
 import './css/highlighting.css';
 import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
-// import Peripherals from './peripherals';
-// import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
-// import { BasicTextSelection, FrameClickEvent } from "@readium/navigator-html-injectables";
 import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
-// import { Locator, Manifest, Publication } from "@readium/shared";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { gatherAndPrepareTextNodes, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
+import { deepCloneDocumentTextNodeChunks, gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
 const debug = document.getElementById("debug")!;
 
+function logToStupidPreBlock(color : string, ...args : any[]) {
+  const dv = document.createElement("div");
+  dv.style.color = color;
+  dv.innerHTML = args.map((arg : any) => {
+    if (typeof arg === "string") {
+      return arg;
+    }
+    try {
+      return JSON.stringify(arg);
+    } catch (e) {
+      return arg;
+    }
+  }).join(", ")
+  debug.appendChild(dv);
+  debug.scrollTo(0, debug.scrollHeight)
+}
+
 const pmc = {
-  debug: (...args : any[]) => { console.debug(args); debug.innerHTML += `<div style="color: gray">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  log: (...args : any[]) => { console.log(args); debug.innerHTML += `<div style="color: black">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  warn: (...args : any[]) => { console.warn(args); debug.innerHTML += `<div style="color: dark-yellow">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
-  error: (...args : any[]) => { console.error(args); debug.innerHTML += `<div style="color: red">${args}</div>`; debug.scrollTo(0, debug.scrollHeight) },
+  debug: (...args : any[]) => { console.debug(...args); logToStupidPreBlock("gray", ...args) },
+  log: (...args : any[]) => { console.log(...args); logToStupidPreBlock("black", ...args) },
+  warn: (...args : any[]) => { console.warn(...args); logToStupidPreBlock("darkorange", ...args) },
+  error: (...args : any[]) => { console.error(...args); logToStupidPreBlock("red", ...args) },
 };
 
 let toggledDebug = false;
 debug.addEventListener("click", () => {
   if (toggledDebug) {
     debug.style.height = "";
-    debug.style.overflow = "hidden";
     toggledDebug = false
   } else {
     debug.style.height = "45%";
-    debug.style.overflow = "auto";
     toggledDebug = true
   }
 })
 
-const { isAndroid, isFirefox } = detectPlatformFeatures()
+const { isAndroid } = detectPlatformFeatures()
 
 function hideLoadingMessage() {
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
@@ -133,40 +144,72 @@ function setWordRects(wordRects : DOMRect[]) {
   });
 }
 
-function onPublicationClicked({x, y} : {x: number, y : number}) {
-  pmc.debug(`Frame clicked at ${x}/${y}`);
+type WordPositionInfo = {
+  found : boolean
+  rangedTextNodeIndex : number
+  documentTextNodeChunkIndex : number
+  wordCharPos : number
+}
 
-  documentTextNodes.forEach((dtn) => {
-    dtn.rangedTextNodes.forEach((rtn) => {
-      const range = new Range()
-      range.setStart(rtn.textNode, 0);
-      range.setEnd(rtn.textNode, rtn.textNode.textContent!.length - 1);
-      range.getClientRects()
-      for (let i = 0; i < range.getClientRects().length; i++) {
-        const rect = range.getClientRects().item(i);
-        if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
-          pmc.debug(`UT: ${dtn.utteranceStr}`)
-          pmc.log("found: " + rtn.textNode.textContent);
-        }
+function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
+
+  for (let dtnIdx = 0; dtnIdx < documentTextNodes.length; dtnIdx++) {
+    const dtn = documentTextNodes[dtnIdx];
+    for (let rtnIdx = 0; rtnIdx < dtn.rangedTextNodes.length; rtnIdx++) {
+      const rtn = dtn.rangedTextNodes[rtnIdx];
+      const wordCharPos = getWordCharPosAtXY(x, y, rtn.textNode);
+      if (wordCharPos > -1) {
+        return {found: true, rangedTextNodeIndex: rtnIdx, documentTextNodeChunkIndex: dtnIdx, wordCharPos: wordCharPos}
       }
-      //pmc.log(rtn.textNode, rtn.textNode.textContent)
-    })
-  })
+    };
+  }
+  return {found : false, rangedTextNodeIndex: -1, documentTextNodeChunkIndex: -1, wordCharPos: -1};
 }
 
-function reloadContentQueue() {
-    navigator.stop()
-    const contentQueue = navigator.getContentQueue()
-    navigator.loadContent(contentQueue);
-    navigator.stop()
+
+function breakUpUtterancesAt({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
+  if (documentTextNodeChunkIndex < 0 || rangedTextNodeIndex < 0 || wordCharPos < 0) { return }
+  pmc.log(`found: "${documentTextNodes[documentTextNodeChunkIndex].rangedTextNodes[rangedTextNodeIndex].textNode.textContent!.substring(wordCharPos)}"`, documentTextNodeChunkIndex, rangedTextNodeIndex, wordCharPos)
+
+  const newDocumentTextNodes = deepCloneDocumentTextNodeChunks(documentTextNodes);
+  const dtn = newDocumentTextNodes[documentTextNodeChunkIndex];
+  const rtn = dtn.rangedTextNodes[rangedTextNodeIndex];
+  const utChIdx = rtn.parentStartCharIndex + wordCharPos
+  const utteranceStrAfter = dtn.utteranceStr.substring(utChIdx, dtn.utteranceStr.length - 1); 
+  utteranceIndex = documentTextNodeChunkIndex
+  newDocumentTextNodes[documentTextNodeChunkIndex].utteranceStr = " ".repeat(utChIdx) + utteranceStrAfter
+  navigator.stop()
+  navigator.loadContent(newDocumentTextNodes.map((dtn, idx) => ({ id: `${idx}`, text: dtn.utteranceStr })));
+  navigator.jumpTo(utteranceIndex);
 }
 
+
+function onPublicationClicked({x, y} : {x: number, y : number}) {
+  pmc.log(`Frame clicked at ${x}/${y}`);
+  reloadDocumentTextNodes();
+  const result = findClickedOnWordPosition({x, y});
+  if (result.found) {
+      if (result.rangedTextNodeIndex === 0 && result.wordCharPos === 0) {
+        navigator.jumpTo(result.documentTextNodeChunkIndex);
+      } else {
+        breakUpUtterancesAt(result);
+      }
+  }
+}
+
+function reloadDocumentTextNodes() {
+  navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+      id: `${idx}`,
+      text: dtn.utteranceStr
+  })));
+}
 
 function adjustPlaybackRate(newRate : number) {
   if (newRate > 0.0 && newRate <= 2.0) {
     navigator.setRate(newRate);
     rateNormalButton.innerHTML = `${Math.floor(navigator.getPlaybackRate() * 100)}%`;
-    reloadContentQueue();
+    navigator.stop();
+    reloadDocumentTextNodes();
     pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
   }
 }
@@ -174,22 +217,19 @@ function adjustPlaybackRate(newRate : number) {
 function onPlayButtonClicked() {
   pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
-    if (isAndroid && isFirefox) {
-      reloadContentQueue()
-      pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+    if (isAndroid) {
+      navigator.stop();
+      reloadDocumentTextNodes();
+      pmc.warn("TODO (Android) remember current word boundary.");
     } else {
       navigator.pause();
     }
     playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   } else if (navigator.getState() === "paused") {
-    if (isAndroid && isFirefox) {
-      pmc.warn("FIXME: android+firefox should not reach this point now")
-    } else {
-      navigator.play()
-    }
+    navigator.play()
   } else if (utteranceIndex > -1) {
-    if (isAndroid && isFirefox) {
-      pmc.warn("FIXME: figure out android firefox problem here")
+    if (isAndroid) {
+      pmc.warn("TODO (Android) continue at stored word boundary.");
     }
     navigator.jumpTo(utteranceIndex);
   }
@@ -197,7 +237,7 @@ function onPlayButtonClicked() {
 
 
 function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackEvent) {
-  pmc.log(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
+  pmc.debug(`WebSpeechNavigatorEvent state: ${navigator.getState()}`, `Event type: ${type}`, "details:", detail)
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
@@ -253,9 +293,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
         }
         setWordRects(newWordRects)
     }
-    // if (navigator.getState() === "playing") {
-    //     setUtteranceIndex(utIdx)
-    // }
+    utteranceIndex = utIdx;
   }
 }
 
@@ -306,10 +344,7 @@ async function init(bookId: string) {
               const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
               documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
-              navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
-                  id: `${idx}`,
-                  text: dtn.utteranceStr
-              })));
+              reloadDocumentTextNodes()
               const utteranceIndices = documentTextNodes.map((dtn, idx) => {
                   if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
                       return idx;
@@ -360,7 +395,7 @@ async function init(bookId: string) {
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-            pmc.debug("textSelected selection=", selection)
+            pmc.log("textSelected selection=", selection)
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);

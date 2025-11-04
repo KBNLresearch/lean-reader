@@ -73,6 +73,12 @@ header h1 {
     padding: var(--reader-footer-padding);
     bottom: 0;
     height: var(--reader-footer-inner-height);
+    overflow-y: auto;
+}
+
+#debug div {
+    padding: 4px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1)
 }
 
 a {
@@ -171,6 +177,10 @@ header #rate-faster {
     display: flex;
     width: 100%;
     margin: 0;
+}
+
+#wrapper button  {
+    height: calc(100% - 2px)
 }
 
 main#listing {

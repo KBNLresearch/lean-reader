@@ -1,3 +1,5 @@
+export const UNICODE_WORD_REGEX = /[\p{Letter}\p{Number}]+/ug
+
 export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
     const range = new Range();
     range.setStart(textNode, 0);
@@ -56,6 +58,15 @@ export type DocumentTextNodesChunk = {
     utteranceStr: string
 }
 
+export const deepCloneDocumentTextNodeChunks = (documentTextNodeChunks : DocumentTextNodesChunk[] ) => documentTextNodeChunks.map((dtn) => ({
+    utteranceStr: dtn.utteranceStr,
+    rangedTextNodes: dtn.rangedTextNodes.map((rtn) => ({
+        textNode: rtn.textNode,
+        parentStartCharIndex: rtn.parentStartCharIndex
+    }))
+}));
+
+
 
 const injectTrailingSpace = (inStr : string) => inStr.replace(/([^\s])$/, "$1 ")
 
@@ -88,4 +99,32 @@ export function gatherAndPrepareTextNodes(wnd : Window): DocumentTextNodesChunk[
             }, "")
         }))
         .filter((chnk) => chnk.utteranceStr.trim().length > 0)
+}
+
+
+export function getWordCharPosAtXY(x : number, y : number, textNode : Node) : number {
+    if (!textNode.textContent || textNode.textContent.length === 0) { return -1; }
+
+    const matches = textNode.textContent.matchAll(UNICODE_WORD_REGEX);
+    let wordPositions = [0]
+    for (const m of matches) {
+        wordPositions.push(m.index)
+    }
+    wordPositions.push(textNode.textContent.length - 1)
+
+    for (let wIdx = 0; wIdx < wordPositions.length - 1; wIdx++) {
+        const range = new Range()
+        const startPos = wordPositions[wIdx];
+        const endPos =  wordPositions[wIdx + 1] 
+        range.setStart(textNode, startPos);
+        range.setEnd(textNode, endPos);
+        range.getClientRects()
+        for (let i = 0; i < range.getClientRects().length; i++) {
+            const rect = range.getClientRects().item(i);
+            if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
+                return startPos;
+            }
+        }
+    }
+    return -1;
 }
