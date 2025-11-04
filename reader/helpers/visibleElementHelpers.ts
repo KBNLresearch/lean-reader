@@ -1,4 +1,3 @@
-// export const UNICODE_NON_WORD_REGEX = /[^\p{Letter}\p{Number}]+/ug
 export const UNICODE_WORD_REGEX = /[\p{Letter}\p{Number}]+/ug
 
 export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
