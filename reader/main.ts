@@ -224,20 +224,16 @@ function onPlayButtonClicked() {
   if (navigator.getState() === "playing") {
     if (isAndroid) {
       reloadContentQueue()
-      pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+      pmc.warn("TODO (Android) remember current word boundary.");
     } else {
       navigator.pause();
     }
     playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   } else if (navigator.getState() === "paused") {
-    if (isAndroid) {
-      pmc.warn("FIXME: android+firefox should not reach this point now")
-    } else {
-      navigator.play()
-    }
+    navigator.play()
   } else if (utteranceIndex > -1) {
     if (isAndroid) {
-      pmc.warn("FIXME: figure out android firefox problem here, utteranceIndex: ", utteranceIndex)
+      pmc.warn("TODO (Android) continue at stored word boundary.");
     }
     navigator.jumpTo(utteranceIndex);
   }
