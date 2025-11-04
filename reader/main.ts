@@ -204,17 +204,12 @@ function reloadDocumentTextNodes() {
   })));
 }
 
-function reloadContentQueue() {
-    navigator.stop()
-    reloadDocumentTextNodes()
-}
-
-
 function adjustPlaybackRate(newRate : number) {
   if (newRate > 0.0 && newRate <= 2.0) {
     navigator.setRate(newRate);
     rateNormalButton.innerHTML = `${Math.floor(navigator.getPlaybackRate() * 100)}%`;
-    reloadContentQueue();
+    navigator.stop();
+    reloadDocumentTextNodes();
     pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
   }
 }
@@ -223,7 +218,8 @@ function onPlayButtonClicked() {
   pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid) {
-      reloadContentQueue()
+      navigator.stop();
+      reloadDocumentTextNodes();
       pmc.warn("TODO (Android) remember current word boundary.");
     } else {
       navigator.pause();
