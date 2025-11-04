@@ -179,6 +179,10 @@ header #rate-faster {
     margin: 0;
 }
 
+#wrapper button  {
+    height: calc(100% - 2px)
+}
+
 main#listing {
     width: 100%;
     height: 100%;

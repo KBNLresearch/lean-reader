@@ -59,6 +59,15 @@ export type DocumentTextNodesChunk = {
     utteranceStr: string
 }
 
+export const deepCloneDocumentTextNodeChunks = (documentTextNodeChunks : DocumentTextNodesChunk[] ) => documentTextNodeChunks.map((dtn) => ({
+    utteranceStr: dtn.utteranceStr,
+    rangedTextNodes: dtn.rangedTextNodes.map((rtn) => ({
+        textNode: rtn.textNode,
+        parentStartCharIndex: rtn.parentStartCharIndex
+    }))
+}));
+
+
 
 const injectTrailingSpace = (inStr : string) => inStr.replace(/([^\s])$/, "$1 ")
 
