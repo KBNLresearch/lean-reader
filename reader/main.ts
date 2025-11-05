@@ -9,6 +9,19 @@ import { deepCloneDocumentTextNodeChunks, gatherAndPrepareTextNodes, getWordChar
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
+
+
+type WordPositionInfo = {
+  rangedTextNodeIndex : number
+  documentTextNodeChunkIndex : number
+  wordCharPos : number
+}
+
+const lastKnownWordPosition : WordPositionInfo = {
+  rangedTextNodeIndex: -1,
+  documentTextNodeChunkIndex: -1,
+  wordCharPos: -1
+}
 const debug = document.getElementById("debug")!;
 
 function logToStupidPreBlock(color : string, ...args : any[]) {
@@ -58,7 +71,6 @@ const rateSlowerButton = document.getElementById("rate-slower")!;
 const rateFasterButton = document.getElementById("rate-faster")!;
 const rateNormalButton = document.getElementById("rate-percentage")!;
 const VOICE_URI_KEY = "voiceURI";
-let utteranceIndex = -1;
 let voicesInitialized = false;
 const voiceSelect = document.getElementById("voice-select")!;
 
@@ -144,12 +156,6 @@ function setWordRects(wordRects : DOMRect[]) {
   });
 }
 
-type WordPositionInfo = {
-  found : boolean
-  rangedTextNodeIndex : number
-  documentTextNodeChunkIndex : number
-  wordCharPos : number
-}
 
 function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
 
@@ -159,43 +165,47 @@ function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositi
       const rtn = dtn.rangedTextNodes[rtnIdx];
       const wordCharPos = getWordCharPosAtXY(x, y, rtn.textNode);
       if (wordCharPos > -1) {
-        return {found: true, rangedTextNodeIndex: rtnIdx, documentTextNodeChunkIndex: dtnIdx, wordCharPos: wordCharPos}
+        return {rangedTextNodeIndex: rtnIdx, documentTextNodeChunkIndex: dtnIdx, wordCharPos: wordCharPos}
       }
-    };
+    }
   }
-  return {found : false, rangedTextNodeIndex: -1, documentTextNodeChunkIndex: -1, wordCharPos: -1};
+  return {rangedTextNodeIndex: -1, documentTextNodeChunkIndex: -1, wordCharPos: -1};
 }
 
 
-function breakUpUtterancesAt({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
-  if (documentTextNodeChunkIndex < 0 || rangedTextNodeIndex < 0 || wordCharPos < 0) { return }
-  pmc.log(`found: "${documentTextNodes[documentTextNodeChunkIndex].rangedTextNodes[rangedTextNodeIndex].textNode.textContent!.substring(wordCharPos)}"`, documentTextNodeChunkIndex, rangedTextNodeIndex, wordCharPos)
+function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
+  pmc.debug(`jumping to word at: dtn=${documentTextNodeChunkIndex}, rtn=${rangedTextNodeIndex}, wrd=${wordCharPos}`);
+  if (documentTextNodeChunkIndex < 0) { 
+    return
+  } else if (rangedTextNodeIndex < 0 || wordCharPos < 0) {
+    navigator.jumpTo(documentTextNodeChunkIndex);
+    return
+  }
 
   const newDocumentTextNodes = deepCloneDocumentTextNodeChunks(documentTextNodes);
   const dtn = newDocumentTextNodes[documentTextNodeChunkIndex];
   const rtn = dtn.rangedTextNodes[rangedTextNodeIndex];
   const utChIdx = rtn.parentStartCharIndex + wordCharPos
   const utteranceStrAfter = dtn.utteranceStr.substring(utChIdx, dtn.utteranceStr.length - 1); 
-  utteranceIndex = documentTextNodeChunkIndex
+
+  lastKnownWordPosition.documentTextNodeChunkIndex = documentTextNodeChunkIndex
+  lastKnownWordPosition.rangedTextNodeIndex = rangedTextNodeIndex;
+  lastKnownWordPosition.wordCharPos = wordCharPos;
+
   newDocumentTextNodes[documentTextNodeChunkIndex].utteranceStr = " ".repeat(utChIdx) + utteranceStrAfter
   navigator.stop()
   navigator.loadContent(newDocumentTextNodes.map((dtn, idx) => ({ id: `${idx}`, text: dtn.utteranceStr })));
-  navigator.jumpTo(utteranceIndex);
+  navigator.jumpTo(documentTextNodeChunkIndex);
 }
 
 
 function onPublicationClicked({x, y} : {x: number, y : number}) {
-  pmc.log(`Frame clicked at ${x}/${y}`);
+  pmc.debug(`Frame clicked at ${x}/${y}`);
   reloadDocumentTextNodes();
   const result = findClickedOnWordPosition({x, y});
-  if (result.found) {
-      if (result.rangedTextNodeIndex === 0 && result.wordCharPos === 0) {
-        navigator.jumpTo(result.documentTextNodeChunkIndex);
-      } else {
-        breakUpUtterancesAt(result);
-      }
-  }
+  jumpToWord(result);
 }
+
 
 function reloadDocumentTextNodes() {
   navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
@@ -203,6 +213,7 @@ function reloadDocumentTextNodes() {
       text: dtn.utteranceStr
   })));
 }
+
 
 function adjustPlaybackRate(newRate : number) {
   if (newRate > 0.0 && newRate <= 2.0) {
@@ -220,18 +231,14 @@ function onPlayButtonClicked() {
     if (isAndroid) {
       navigator.stop();
       reloadDocumentTextNodes();
-      pmc.warn("TODO (Android) remember current word boundary.");
     } else {
       navigator.pause();
     }
     playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   } else if (navigator.getState() === "paused") {
     navigator.play()
-  } else if (utteranceIndex > -1) {
-    if (isAndroid) {
-      pmc.warn("TODO (Android) continue at stored word boundary.");
-    }
-    navigator.jumpTo(utteranceIndex);
+  } else if (lastKnownWordPosition.documentTextNodeChunkIndex > -1) {
+    jumpToWord(lastKnownWordPosition);
   }
 }
 
@@ -252,12 +259,16 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
     case "idle":
       playButton.removeAttribute("disabled");
       playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
-      clearHighlights();
       break
     case "paused":
     default:
       playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
   }
+
+  if (type === "end") {
+    clearHighlights();
+  }
+
   if (type === "boundary" && navigator.getState() === "playing") {
     const { charIndex, charLength, name } = detail;
     if (name !== "word") { return; }
@@ -292,8 +303,10 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
             }
         }
         setWordRects(newWordRects)
+        lastKnownWordPosition.wordCharPos =  charIndex + charLength;
+        lastKnownWordPosition.rangedTextNodeIndex = firstTextNodeIndex;
     }
-    utteranceIndex = utIdx;
+    lastKnownWordPosition.documentTextNodeChunkIndex = utIdx;
   }
 }
 
@@ -334,6 +347,7 @@ async function init(bookId: string) {
         },
         positionChanged: function (locator: Locator): void {
           hideLoadingMessage();
+          clearHighlights();
           pmc.debug("positionChanged locator=", locator)
           navigator.stop();
           document.querySelectorAll("iframe").forEach((fr, idx) => {
@@ -353,9 +367,13 @@ async function init(bookId: string) {
               }).filter((idx) => idx > -1);
 
               if (utteranceIndices.length > 0) {
-                utteranceIndex = utteranceIndices[0];
+                lastKnownWordPosition.documentTextNodeChunkIndex = utteranceIndices[0];
+                lastKnownWordPosition.wordCharPos = 0;
+                lastKnownWordPosition.rangedTextNodeIndex = 0;
               } else {
-                utteranceIndex = -1;
+                lastKnownWordPosition.documentTextNodeChunkIndex = -1;
+                lastKnownWordPosition.wordCharPos = -1;
+                lastKnownWordPosition.rangedTextNodeIndex = -1;
               }
             }
           });
