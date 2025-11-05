@@ -231,6 +231,7 @@ function onPlayButtonClicked() {
     if (isAndroid) {
       navigator.stop();
       reloadDocumentTextNodes();
+      navigator.stop();
     } else {
       navigator.pause();
     }
