@@ -6,7 +6,7 @@ import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
 import { deepCloneDocumentTextNodeChunks, gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
-import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent } from './readium-speech';
+import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent, type ReadiumSpeechVoice } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 
 
@@ -17,11 +17,27 @@ type WordPositionInfo = {
   wordCharPos : number
 }
 
+let documentTextNodes : DocumentTextNodesChunk[] = []
+
 const lastKnownWordPosition : WordPositionInfo = {
   rangedTextNodeIndex: -1,
   documentTextNodeChunkIndex: -1,
   wordCharPos: -1
 }
+
+function updateLastKnownWordPosition(newPos : WordPositionInfo, caller : string) {
+  const {rangedTextNodeIndex: rtn, documentTextNodeChunkIndex : dtn, wordCharPos: wrd} = lastKnownWordPosition;
+  const {rangedTextNodeIndex: rt1, documentTextNodeChunkIndex : dt1, wordCharPos: wd1} = newPos;
+  pmc.debug(`${caller} is updating lastKnownWordPosition from dtn=${dtn} rtn=${rtn} wrd=${wrd}`, ) ;
+  pmc.debug(`${caller} is updating lastKnownWordPosition into dtn=${dt1} rtn=${rt1} wrd=${wd1}`);
+  pmc.debug(navigator.getCurrentContent()?.text);
+  pmc.debug(`---`);
+
+  lastKnownWordPosition.rangedTextNodeIndex = newPos.rangedTextNodeIndex;
+  lastKnownWordPosition.documentTextNodeChunkIndex = newPos.documentTextNodeChunkIndex;
+  lastKnownWordPosition.wordCharPos = newPos.wordCharPos;
+}
+
 const debug = document.getElementById("debug")!;
 
 function logToStupidPreBlock(color : string, ...args : any[]) {
@@ -61,8 +77,9 @@ debug.addEventListener("click", () => {
 
 const { isAndroid } = detectPlatformFeatures()
 
-function hideLoadingMessage() {
-  document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = "none");
+function toggleLoadingMessage(toggled : boolean) {
+
+  document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = toggled ? "block" : "none");
 }
 
 const navigator = new WebSpeechReadAloudNavigator()
@@ -99,16 +116,9 @@ async function initVoices() {
       } else {
         navigator.setVoice(voices[0])
       }
-      // FIXME: extract function
       voiceSelect.addEventListener("change", (ev) => {
-        const voice = voices[parseInt((ev.target as HTMLOptionElement).value)];
-        navigator.stop()
-        const contentQueue = navigator.getContentQueue();
-        navigator.setVoice(voice);
-        navigator.loadContent(contentQueue || []);
-        localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
+        changeVoiceTo(voices[parseInt((ev.target as HTMLOptionElement).value)]);
       })
-//      navigator.setRate(2.0)
 
       document.getElementById("voices-are-pending")?.remove();
       if (voices.length === 1) {
@@ -136,7 +146,6 @@ navigator.on("ready", initVoices);
 
 
 const container = document.getElementById("container")!;
-let documentTextNodes : DocumentTextNodesChunk[] = []
 
 function clearHighlights() {
   document.querySelectorAll(".word-highlight").forEach((el) => el.remove())
@@ -183,14 +192,12 @@ function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharP
   }
 
   const newDocumentTextNodes = deepCloneDocumentTextNodeChunks(documentTextNodes);
-  const dtn = newDocumentTextNodes[documentTextNodeChunkIndex];
+  const dtn = documentTextNodes[documentTextNodeChunkIndex];
   const rtn = dtn.rangedTextNodes[rangedTextNodeIndex];
   const utChIdx = rtn.parentStartCharIndex + wordCharPos
   const utteranceStrAfter = dtn.utteranceStr.substring(utChIdx, dtn.utteranceStr.length - 1); 
 
-  lastKnownWordPosition.documentTextNodeChunkIndex = documentTextNodeChunkIndex
-  lastKnownWordPosition.rangedTextNodeIndex = rangedTextNodeIndex;
-  lastKnownWordPosition.wordCharPos = wordCharPos;
+  updateLastKnownWordPosition({documentTextNodeChunkIndex: documentTextNodeChunkIndex, rangedTextNodeIndex: rangedTextNodeIndex, wordCharPos: wordCharPos}, "jumpToWord");
 
   newDocumentTextNodes[documentTextNodeChunkIndex].utteranceStr = " ".repeat(utChIdx) + utteranceStrAfter
   navigator.stop()
@@ -208,6 +215,7 @@ function onPublicationClicked({x, y} : {x: number, y : number}) {
 
 
 function reloadDocumentTextNodes() {
+  navigator.loadContent([]);
   navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
       id: `${idx}`,
       text: dtn.utteranceStr
@@ -215,23 +223,34 @@ function reloadDocumentTextNodes() {
 }
 
 
+function changeVoiceTo(voice: ReadiumSpeechVoice) {
+  const shouldResume = navigator.getState() === "playing";
+  navigator.stop();
+  navigator.setVoice(voice);
+  localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
+  if (shouldResume) {
+    jumpToWord(lastKnownWordPosition);
+  }
+}
+
+
 function adjustPlaybackRate(newRate : number) {
   if (newRate > 0.0 && newRate <= 2.0) {
     navigator.setRate(newRate);
     rateNormalButton.innerHTML = `${Math.floor(navigator.getPlaybackRate() * 100)}%`;
+    const shouldResume = navigator.getState() === "playing";
     navigator.stop();
-    reloadDocumentTextNodes();
-    pmc.warn("FIXME: hack pause/resume in by splitting utterances at current boundary")
+    if (shouldResume) {
+      jumpToWord(lastKnownWordPosition);
+    }
   }
 }
 
 function onPlayButtonClicked() {
-  pmc.log(`Play button clicked with navigator state: ${navigator.getState()}`);
+  pmc.debug(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid) {
       navigator.stop();
-      // reloadDocumentTextNodes();
-      // navigator.stop();
     } else {
       navigator.pause();
     }
@@ -273,7 +292,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   if (type === "boundary" && navigator.getState() === "playing") {
     const { charIndex, charLength, name } = detail;
     if (name !== "word") { return; }
-    const utIdx = parseInt(navigator.getCurrentContent()!.id!)
+    const utIdx = parseInt(navigator.getCurrentContent()!.id!);
     let firstTextNodeIndex = -1, lastTextNodeIndex = -1;
     for (let idx = 0; idx < (documentTextNodes[utIdx]?.rangedTextNodes || []).length; idx++) {
         const rtn = documentTextNodes[utIdx].rangedTextNodes[idx];
@@ -298,16 +317,18 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
             const range = new Range()
             range.setStart(rtn.textNode, rangeBegin);
             range.setEnd(rtn.textNode, rangeEnd);
-            // sel?.addRange(range);
             for (let i = 0; i < range.getClientRects().length; i++) {
                 newWordRects.push(range.getClientRects().item(i)!);
             }
         }
         setWordRects(newWordRects)
-        lastKnownWordPosition.wordCharPos =  charIndex + charLength;
-        lastKnownWordPosition.rangedTextNodeIndex = firstTextNodeIndex;
+        updateLastKnownWordPosition({
+          ...lastKnownWordPosition,
+          wordCharPos: (charIndex + charLength) - documentTextNodes[utIdx].rangedTextNodes[firstTextNodeIndex].parentStartCharIndex,
+          rangedTextNodeIndex: firstTextNodeIndex},
+        "boundary handler A");
     }
-    lastKnownWordPosition.documentTextNodeChunkIndex = utIdx;
+    updateLastKnownWordPosition({...lastKnownWordPosition, documentTextNodeChunkIndex: utIdx}, "boundary handler B");
   }
 }
 
@@ -347,37 +368,35 @@ async function init(bookId: string) {
 
         },
         positionChanged: function (locator: Locator): void {
-          hideLoadingMessage();
           clearHighlights();
           pmc.debug("positionChanged locator=", locator)
           navigator.stop();
-          document.querySelectorAll("iframe").forEach((fr, idx) => {
-            if (fr.style.visibility != "hidden") {
-              fr.contentWindow?.removeEventListener("click", handleIframeClick);
-              fr.contentWindow?.addEventListener("click", handleIframeClick)
-              pmc.debug(`iframe being used (${idx}): `, fr);
-              const navWnd = (fr as HTMLIFrameElement).contentWindow;
+          const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
+          if (visibleFrames.length > 0) {
+            toggleLoadingMessage(false);
+            const fr = visibleFrames[0];
+            fr.contentWindow?.removeEventListener("click", handleIframeClick);
+            fr.contentWindow?.addEventListener("click", handleIframeClick)
+            const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
-              documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
-              reloadDocumentTextNodes()
-              const utteranceIndices = documentTextNodes.map((dtn, idx) => {
-                  if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
-                      return idx;
-                  }
-                  return -1;
-              }).filter((idx) => idx > -1);
+            documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
+            reloadDocumentTextNodes()
+            const utteranceIndices = documentTextNodes.map((dtn, idx) => {
+                if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
+                    return idx;
+                }
+                return -1;
+            }).filter((idx) => idx > -1);
 
-              if (utteranceIndices.length > 0) {
-                lastKnownWordPosition.documentTextNodeChunkIndex = utteranceIndices[0];
-                lastKnownWordPosition.wordCharPos = 0;
-                lastKnownWordPosition.rangedTextNodeIndex = 0;
-              } else {
-                lastKnownWordPosition.documentTextNodeChunkIndex = -1;
-                lastKnownWordPosition.wordCharPos = -1;
-                lastKnownWordPosition.rangedTextNodeIndex = -1;
-              }
+            if (utteranceIndices.length > 0) {
+              updateLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}, "Position changed handler A");
+            } else {
+              updateLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}, "Position changed handler B");
             }
-          });
+          } else {
+            toggleLoadingMessage(true);
+          }
+        
           if (nav.canGoForward) {
             document.getElementById("next-page")!.style.visibility = "visible";
           } else {
@@ -419,13 +438,18 @@ async function init(bookId: string) {
       };
       const nav = new EpubNavigator(container, publication, listeners);
       await nav.load();
-      document.getElementById("next-page")?.addEventListener("click", () => nav.goForward(true, pmc.debug))
-      document.getElementById("previous-page")?.addEventListener("click", () => nav.goBackward(true, pmc.debug))
-    })
-    // .catch((error) => {
-    //   pmc.error("Error loading manifest", error);
-    //   alert(`Failed loading manifest ${selfLink}`);
-    // });
+      document.getElementById("next-page")?.addEventListener("click", () => {
+        nav.goForward(true, (done) => pmc.debug(`next-page is ${done}`));
+        toggleLoadingMessage(true);
+      });
+      document.getElementById("previous-page")?.addEventListener("click", () => {
+        nav.goBackward(true, (done) => pmc.debug(`previous-page is ${done}`));
+        toggleLoadingMessage(true);
+      })
+    }).catch((error) => {
+      pmc.error("Error loading manifest", error);
+      alert(`Failed loading manifest ${selfLink}`);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -438,4 +462,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-window.addEventListener("unload", () => navigator.stop())
+window.addEventListener("unload", () => navigator.stop());
