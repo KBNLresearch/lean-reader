@@ -230,8 +230,8 @@ function onPlayButtonClicked() {
   if (navigator.getState() === "playing") {
     if (isAndroid) {
       navigator.stop();
-      reloadDocumentTextNodes();
-      navigator.stop();
+      // reloadDocumentTextNodes();
+      // navigator.stop();
     } else {
       navigator.pause();
     }
