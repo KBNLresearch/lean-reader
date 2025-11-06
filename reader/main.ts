@@ -1,5 +1,8 @@
 import './css/style.css';
 import './css/highlighting.css';
+import playIcon from './icons/play.svg';
+import pauseIcon from './icons/pause.svg';
+
 import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
 import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
@@ -191,7 +194,7 @@ function onPlayButtonClicked() {
     } else {
       navigator.pause();
     }
-    playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+    playButton.querySelector("img")?.setAttribute("src", playIcon)
   } else if (navigator.getState() === "paused") {
     navigator.play()
   } else if (lastKnownWordPosition.documentTextNodeChunkIndex > -1) {
@@ -205,21 +208,21 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/pause.svg")
+      playButton.querySelector("img")?.setAttribute("src", pauseIcon)
       break;
     case "loading":
       playButton.setAttribute("disabled", "disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
       store.dispatch(setHightlights([]))
       break;
     case "ready":
     case "idle":
       playButton.removeAttribute("disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
       break
     case "paused":
     default:
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
   }
 
   if (type === "end") {
