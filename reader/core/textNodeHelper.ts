@@ -1,3 +1,5 @@
+import type { DocumentTextNodesChunk, RangedTextNode } from "./types";
+
 export const UNICODE_WORD_REGEX = /[\p{Letter}\p{Number}]+/ug
 
 export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
@@ -16,7 +18,7 @@ export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
     return true;
 }
 
-export function getElementsWithOwnText(wnd : Window|null, currentElement? : Element, gathered? : HTMLElement[]): HTMLElement[] {
+function getElementsWithOwnText(wnd : Window|null, currentElement? : Element, gathered? : HTMLElement[]): HTMLElement[] {
     currentElement = currentElement ?? wnd!.document.documentElement;
     gathered = gathered ?? [];
 
@@ -30,7 +32,7 @@ export function getElementsWithOwnText(wnd : Window|null, currentElement? : Elem
             getElementsWithOwnText(wnd, currentElement.childNodes[idx] as Element, gathered);
         }
     }
-    return gathered
+    return gathered;
 }
 
 
@@ -46,26 +48,6 @@ function gatherTextNodes(currentElement : HTMLElement, gathered? : Node[] ): Nod
     }
     return gathered;
 }
-
-
-export type RangedTextNode = {
-    textNode: Node
-    parentStartCharIndex: number
-}
-
-export type DocumentTextNodesChunk = {
-    rangedTextNodes: RangedTextNode[]
-    utteranceStr: string
-}
-
-export const deepCloneDocumentTextNodeChunks = (documentTextNodeChunks : DocumentTextNodesChunk[] ) => documentTextNodeChunks.map((dtn) => ({
-    utteranceStr: dtn.utteranceStr,
-    rangedTextNodes: dtn.rangedTextNodes.map((rtn) => ({
-        textNode: rtn.textNode,
-        parentStartCharIndex: rtn.parentStartCharIndex
-    }))
-}));
-
 
 
 const injectTrailingSpace = (inStr : string) => inStr.replace(/([^\s])$/, "$1 ")

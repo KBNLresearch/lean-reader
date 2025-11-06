@@ -4,34 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lean-reader</title>
-    <script type="module" crossorigin src="/lean-reader/assets/reader-Bci2cn2Z.js"></script>
+    <script type="module" crossorigin src="/lean-reader/assets/reader-CWkAQMdB.js"></script>
     <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-nX7O1uCj.js">
     <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-CPoAQMbj.css">
-    <link rel="stylesheet" crossorigin href="/lean-reader/assets/reader-9qkDud3z.css">
+    <link rel="stylesheet" crossorigin href="/lean-reader/assets/reader-Bro2NdH4.css">
   </head>
   <body>
     <header>
         <a href="../" title="Terug naar overzicht">
-          <img src="../icons/arrow_back.svg" />
+          <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20height='24px'%20viewBox='0%20-960%20960%20960'%20width='24px'%20fill='inherit'%3e%3cpath%20d='M640-80%20240-480l400-400%2071%2071-329%20329%20329%20329-71%2071Z'/%3e%3c/svg%3e" />
         </a>
         <select id="voice-select" title="Voorleesstem kiezen" disabled class="readaloud-control">
           <option selected disabled id="voices-are-pending"> - Stemmen laden... -</option>
         </select>
         <button id="play-readaloud" title="Afspelen met voorleesstem" type="button" style="display: none;" class="readaloud-control">
-          <img src="../icons/play.svg" alt="Afspelen met voorleesstem" />
+          <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20height='24px'%20viewBox='0%20-960%20960%20960'%20width='24px'%20fill='Inherit'%3e%3cpath%20d='m%20758.36716,-480%20-480,480%20v%20-960%20z'%20/%3e%3c/svg%3e" alt="Afspelen met voorleesstem" />
         </button>
         <button id="rate-slower" title="Afspeelsnelheid vertragen" type="button" style="display: none;" class="readaloud-control">
-          <img src="../icons/rate-slower.svg" alt="Afspeelsnelheid vertragen" />
+          <img src="data:image/svg+xml,%3csvg%20width='24px'%20height='24px'%20fill='Inherit'%20version='1.1'%20viewBox='0%20-960%20960%20960'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%3e%3cpath%20d='m480-329.83-318.49-318.49h636.98z'/%3e%3cpath%20d='m480-11.341-318.49-318.49h636.98z'/%3e%3cpath%20d='m480-641.51-318.49-318.49h636.98z'/%3e%3c/g%3e%3c/svg%3e" alt="Afspeelsnelheid vertragen" />
         </button>
         <button id="rate-percentage" style="display: none;" class="readaloud-control">100%</button>
         <button id="rate-faster" title="Afspeelsnelheid verhogen" type="button" style="display: none;" class="readaloud-control">
-          <img src="../icons/rate-faster.svg" alt="Afspeelsnelheid vertragen" />
+          <img src="data:image/svg+xml,%3csvg%20width='24px'%20height='24px'%20fill='Inherit'%20version='1.1'%20viewBox='0%20-960%20960%20960'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%3e%3cpath%20d='m480-641.51-318.49%20318.49h636.98z'/%3e%3cpath%20d='m480-960-318.49%20318.49h636.98z'/%3e%3cpath%20d='m480-329.83-318.49%20318.49h636.98z'/%3e%3c/g%3e%3c/svg%3e" alt="Afspeelsnelheid vertragen" />
         </button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
     </header>
     <div id="wrapper">
       <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
-        <img src="../icons/arrow_back.svg" />
+        <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20height='24px'%20viewBox='0%20-960%20960%20960'%20width='24px'%20fill='inherit'%3e%3cpath%20d='M640-80%20240-480l400-400%2071%2071-329%20329%20329%20329-71%2071Z'/%3e%3c/svg%3e" />
       </button>
       <main id="container" aria-label="Publicatie">
         <div id="loading-message">
@@ -39,7 +39,7 @@
         </div>
       </main>
       <button title="Volgende pagina" id="next-page" style="visibility: hidden">
-        <img src="../icons/arrow_forward.svg" />
+        <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20height='24px'%20viewBox='0%20-960%20960%20960'%20width='24px'%20fill='inherit'%3e%3cpath%20d='m321-80-71-71%20329-329-329-329%2071-71%20400%20400L321-80Z'/%3e%3c/svg%3e" />
       </button>
     </div>
     <pre id="debug">

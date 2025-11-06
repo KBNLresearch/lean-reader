@@ -1,86 +1,43 @@
 import './css/style.css';
 import './css/highlighting.css';
+import playIcon from './icons/play.svg';
+import pauseIcon from './icons/pause.svg';
+
 import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
 import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { deepCloneDocumentTextNodeChunks, gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible, type DocumentTextNodesChunk } from './helpers/visibleElementHelpers';
+import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible } from './core/textNodeHelper';
+import { type ReadAloudHighlight, type WordPositionInfo } from "./core/types";
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent, type ReadiumSpeechVoice } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
-
-
-
-type WordPositionInfo = {
-  rangedTextNodeIndex : number
-  documentTextNodeChunkIndex : number
-  wordCharPos : number
-}
-
-let documentTextNodes : DocumentTextNodesChunk[] = []
-
-const lastKnownWordPosition : WordPositionInfo = {
-  rangedTextNodeIndex: -1,
-  documentTextNodeChunkIndex: -1,
-  wordCharPos: -1
-}
-
-function updateLastKnownWordPosition(newPos : WordPositionInfo, caller : string) {
-  const {rangedTextNodeIndex: rtn, documentTextNodeChunkIndex : dtn, wordCharPos: wrd} = lastKnownWordPosition;
-  const {rangedTextNodeIndex: rt1, documentTextNodeChunkIndex : dt1, wordCharPos: wd1} = newPos;
-  pmc.debug(`${caller} is updating lastKnownWordPosition from dtn=${dtn} rtn=${rtn} wrd=${wrd}`, ) ;
-  pmc.debug(`${caller} is updating lastKnownWordPosition into dtn=${dt1} rtn=${rt1} wrd=${wd1}`);
-  pmc.debug(navigator.getCurrentContent()?.text);
-  pmc.debug(`---`);
-
-  lastKnownWordPosition.rangedTextNodeIndex = newPos.rangedTextNodeIndex;
-  lastKnownWordPosition.documentTextNodeChunkIndex = newPos.documentTextNodeChunkIndex;
-  lastKnownWordPosition.wordCharPos = newPos.wordCharPos;
-}
-
-const debug = document.getElementById("debug")!;
-
-function logToStupidPreBlock(color : string, ...args : any[]) {
-  const dv = document.createElement("div");
-  dv.style.color = color;
-  dv.innerHTML = args.map((arg : any) => {
-    if (typeof arg === "string") {
-      return arg;
-    }
-    try {
-      return JSON.stringify(arg);
-    } catch (e) {
-      return arg;
-    }
-  }).join(", ")
-  debug.appendChild(dv);
-  debug.scrollTo(0, debug.scrollHeight)
-}
-
-const pmc = {
-  debug: (...args : any[]) => { console.debug(...args); logToStupidPreBlock("gray", ...args) },
-  log: (...args : any[]) => { console.log(...args); logToStupidPreBlock("black", ...args) },
-  warn: (...args : any[]) => { console.warn(...args); logToStupidPreBlock("darkorange", ...args) },
-  error: (...args : any[]) => { console.error(...args); logToStupidPreBlock("red", ...args) },
-};
-
-let toggledDebug = false;
-debug.addEventListener("click", () => {
-  if (toggledDebug) {
-    debug.style.height = "";
-    toggledDebug = false
-  } else {
-    debug.style.height = "45%";
-    toggledDebug = true
-  }
-})
+import { createPoorMansConsole } from "./util/poorMansConsole";
+import { store } from './core/store';
+import { setDocumentTextNodes, setHightlights, setLastKnownWordPosition, setPublicationIsLoading } from './core/readaloudNavigationSlice';
 
 const { isAndroid } = detectPlatformFeatures()
+const pmc = createPoorMansConsole(document.getElementById("debug")!);
+const container = document.getElementById("container")!;
 
-function toggleLoadingMessage(toggled : boolean) {
-
-  document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = toggled ? "block" : "none");
+function renderHtmlElements() {
+  const { publicationIsLoading, highlights, lastKnownWordPosition } = store.getState().readaloudNavigation;
+  document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = publicationIsLoading ? "block" : "none");
+  document.querySelectorAll(".word-highlight").forEach((el) => el.remove())
+  highlights.forEach(({ rect, characters }) => {
+     const hlDiv = document.createElement("div");
+     hlDiv.innerHTML = characters;
+     hlDiv.className = "word-highlight";
+     hlDiv.style.top = `${rect.top}px`;
+     hlDiv.style.left = `${rect.left}px`;
+     hlDiv.style.width = `${rect.width}px`;
+     hlDiv.style.height = `${rect.height}px`;
+     container.appendChild(hlDiv);
+   });
+   pmc.debug("rendered", highlights, lastKnownWordPosition);
 }
+
+store.subscribe(renderHtmlElements);
 
 const navigator = new WebSpeechReadAloudNavigator()
 const playButton = document.getElementById("play-readaloud")!;
@@ -144,30 +101,8 @@ async function initVoices() {
 }
 navigator.on("ready", initVoices);
 
-
-const container = document.getElementById("container")!;
-
-function clearHighlights() {
-  document.querySelectorAll(".word-highlight").forEach((el) => el.remove())
- 
-}
-
-function setWordRects(wordRects : DOMRect[]) {
-  clearHighlights();
-  wordRects.forEach((rect) => {
-    const hlDiv = document.createElement("div");
-    hlDiv.className = "word-highlight";
-    hlDiv.style.top = `${rect.top}px`;
-    hlDiv.style.left = `${rect.left}px`;
-    hlDiv.style.width = `${rect.right - rect.left}px`;
-    hlDiv.style.height = `${rect.bottom - rect.top}px`;
-    container.appendChild(hlDiv);
-  });
-}
-
-
 function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
-
+  const { documentTextNodes } = store.getState().readaloudNavigation;
   for (let dtnIdx = 0; dtnIdx < documentTextNodes.length; dtnIdx++) {
     const dtn = documentTextNodes[dtnIdx];
     for (let rtnIdx = 0; rtnIdx < dtn.rangedTextNodes.length; rtnIdx++) {
@@ -190,18 +125,19 @@ function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharP
     navigator.jumpTo(documentTextNodeChunkIndex);
     return
   }
-
-  const newDocumentTextNodes = deepCloneDocumentTextNodeChunks(documentTextNodes);
+  const { documentTextNodes } = store.getState().readaloudNavigation;
   const dtn = documentTextNodes[documentTextNodeChunkIndex];
   const rtn = dtn.rangedTextNodes[rangedTextNodeIndex];
   const utChIdx = rtn.parentStartCharIndex + wordCharPos
   const utteranceStrAfter = dtn.utteranceStr.substring(utChIdx, dtn.utteranceStr.length - 1); 
 
-  updateLastKnownWordPosition({documentTextNodeChunkIndex: documentTextNodeChunkIndex, rangedTextNodeIndex: rangedTextNodeIndex, wordCharPos: wordCharPos}, "jumpToWord");
+  store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: documentTextNodeChunkIndex, rangedTextNodeIndex: rangedTextNodeIndex, wordCharPos: wordCharPos}));
 
-  newDocumentTextNodes[documentTextNodeChunkIndex].utteranceStr = " ".repeat(utChIdx) + utteranceStrAfter
   navigator.stop()
-  navigator.loadContent(newDocumentTextNodes.map((dtn, idx) => ({ id: `${idx}`, text: dtn.utteranceStr })));
+  navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
+    id: `${idx}`,
+    text: idx === documentTextNodeChunkIndex ?  " ".repeat(utChIdx) + utteranceStrAfter : dtn.utteranceStr
+  })));
   navigator.jumpTo(documentTextNodeChunkIndex);
 }
 
@@ -215,6 +151,7 @@ function onPublicationClicked({x, y} : {x: number, y : number}) {
 
 
 function reloadDocumentTextNodes() {
+  const { documentTextNodes } = store.getState().readaloudNavigation
   navigator.loadContent([]);
   navigator.loadContent(documentTextNodes.map((dtn, idx) => ({
       id: `${idx}`,
@@ -229,6 +166,7 @@ function changeVoiceTo(voice: ReadiumSpeechVoice) {
   navigator.setVoice(voice);
   localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
   if (shouldResume) {
+    const { lastKnownWordPosition } = store.getState().readaloudNavigation
     jumpToWord(lastKnownWordPosition);
   }
 }
@@ -241,12 +179,14 @@ function adjustPlaybackRate(newRate : number) {
     const shouldResume = navigator.getState() === "playing";
     navigator.stop();
     if (shouldResume) {
+      const { lastKnownWordPosition } = store.getState().readaloudNavigation
       jumpToWord(lastKnownWordPosition);
     }
   }
 }
 
 function onPlayButtonClicked() {
+  const { lastKnownWordPosition } = store.getState().readaloudNavigation
   pmc.debug(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid) {
@@ -254,7 +194,7 @@ function onPlayButtonClicked() {
     } else {
       navigator.pause();
     }
-    playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+    playButton.querySelector("img")?.setAttribute("src", playIcon)
   } else if (navigator.getState() === "paused") {
     navigator.play()
   } else if (lastKnownWordPosition.documentTextNodeChunkIndex > -1) {
@@ -268,28 +208,29 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   switch (navigator.getState()) {
     case "playing":
       playButton.removeAttribute("disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/pause.svg")
+      playButton.querySelector("img")?.setAttribute("src", pauseIcon)
       break;
     case "loading":
       playButton.setAttribute("disabled", "disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
-      clearHighlights();
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
+      store.dispatch(setHightlights([]))
       break;
     case "ready":
     case "idle":
       playButton.removeAttribute("disabled");
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
       break
     case "paused":
     default:
-      playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
+      playButton.querySelector("img")?.setAttribute("src", playIcon)
   }
 
   if (type === "end") {
-    clearHighlights();
+    store.dispatch(setHightlights([]))
   }
 
   if (type === "boundary" && navigator.getState() === "playing") {
+    const { documentTextNodes } = store.getState().readaloudNavigation
     const { charIndex, charLength, name } = detail;
     if (name !== "word") { return; }
     const utIdx = parseInt(navigator.getCurrentContent()!.id!);
@@ -305,30 +246,31 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
         }
     }
     if (firstTextNodeIndex > -1) {
-        // const sel = wnd.getSelection();
-        // sel?.removeAllRanges();
-        let newWordRects : DOMRect[] = []
-        for (let rtnIdx = firstTextNodeIndex; rtnIdx <= lastTextNodeIndex; rtnIdx++) {
-            const rtn = documentTextNodes[utIdx].rangedTextNodes[rtnIdx];
-            const chBegin = charIndex - rtn.parentStartCharIndex;
-            const chEnd = charIndex - rtn.parentStartCharIndex + charLength;
-            const rangeBegin = chBegin < 0 ? 0 : chBegin >  (rtn.textNode.textContent || "").length ?  (rtn.textNode.textContent || "").length : chBegin;
-            const rangeEnd = chEnd > (rtn.textNode.textContent || "").length ? (rtn.textNode.textContent || "").length : chEnd
-            const range = new Range()
-            range.setStart(rtn.textNode, rangeBegin);
-            range.setEnd(rtn.textNode, rangeEnd);
-            for (let i = 0; i < range.getClientRects().length; i++) {
-                newWordRects.push(range.getClientRects().item(i)!);
-            }
-        }
-        setWordRects(newWordRects)
-        updateLastKnownWordPosition({
-          ...lastKnownWordPosition,
-          wordCharPos: (charIndex + charLength) - documentTextNodes[utIdx].rangedTextNodes[firstTextNodeIndex].parentStartCharIndex,
-          rangedTextNodeIndex: firstTextNodeIndex},
-        "boundary handler A");
+      let newWordRects : ReadAloudHighlight[] = []
+      for (let rtnIdx = firstTextNodeIndex; rtnIdx <= lastTextNodeIndex; rtnIdx++) {
+          const rtn = documentTextNodes[utIdx].rangedTextNodes[rtnIdx];
+          const chBegin = charIndex - rtn.parentStartCharIndex;
+          const chEnd = charIndex - rtn.parentStartCharIndex + charLength;
+          const rangeBegin = chBegin < 0 ? 0 : chBegin >  (rtn.textNode.textContent || "").length ?  (rtn.textNode.textContent || "").length : chBegin;
+          const rangeEnd = chEnd > (rtn.textNode.textContent || "").length ? (rtn.textNode.textContent || "").length : chEnd
+          const range = new Range()
+          range.setStart(rtn.textNode, rangeBegin);
+          range.setEnd(rtn.textNode, rangeEnd);
+          for (let i = 0; i < range.getClientRects().length; i++) {
+            const domRect = range.getClientRects().item(i)!
+            newWordRects.push({
+              characters: range.cloneContents().textContent,
+              rect: domRect
+            });
+          }
+      }
+      store.dispatch(setHightlights(newWordRects))
+      store.dispatch(setLastKnownWordPosition({
+        wordCharPos: (charIndex + charLength) - documentTextNodes[utIdx].rangedTextNodes[firstTextNodeIndex].parentStartCharIndex,
+        rangedTextNodeIndex: firstTextNodeIndex,
+        documentTextNodeChunkIndex: utIdx
+      }));
     }
-    updateLastKnownWordPosition({...lastKnownWordPosition, documentTextNodeChunkIndex: utIdx}, "boundary handler B");
   }
 }
 
@@ -353,8 +295,6 @@ async function init(bookId: string) {
   const fetcher: Fetcher = new HttpFetcher(undefined, publicationURL);
   const fetched = fetcher.get(manifestLink);
   const selfLink = (await fetched.link()).toURL(publicationURL)!;
-  debug.innerHTML = publicationURL;
-
 
   await fetched.readAsJSON()
     .then(async (response: unknown) => {
@@ -368,20 +308,21 @@ async function init(bookId: string) {
 
         },
         positionChanged: function (locator: Locator): void {
-          clearHighlights();
+          store.dispatch(setHightlights([]))
           pmc.debug("positionChanged locator=", locator)
           navigator.stop();
           const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
           if (visibleFrames.length > 0) {
-            toggleLoadingMessage(false);
+            store.dispatch(setPublicationIsLoading(false));
             const fr = visibleFrames[0];
             fr.contentWindow?.removeEventListener("click", handleIframeClick);
             fr.contentWindow?.addEventListener("click", handleIframeClick)
             const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
-            documentTextNodes = gatherAndPrepareTextNodes(navWnd!);
+            const newDocumentTextNodes = gatherAndPrepareTextNodes(navWnd!);
+            store.dispatch(setDocumentTextNodes(newDocumentTextNodes));
             reloadDocumentTextNodes()
-            const utteranceIndices = documentTextNodes.map((dtn, idx) => {
+            const utteranceIndices = newDocumentTextNodes.map((dtn, idx) => {
                 if (dtn.rangedTextNodes.find((rt) => isTextNodeVisible(navWnd!, rt.textNode))) {
                     return idx;
                 }
@@ -389,12 +330,12 @@ async function init(bookId: string) {
             }).filter((idx) => idx > -1);
 
             if (utteranceIndices.length > 0) {
-              updateLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}, "Position changed handler A");
+              store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}));
             } else {
-              updateLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}, "Position changed handler B");
+              store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}));
             }
           } else {
-            toggleLoadingMessage(true);
+            store.dispatch(setPublicationIsLoading(true));
           }
         
           if (nav.canGoForward) {
@@ -440,11 +381,11 @@ async function init(bookId: string) {
       await nav.load();
       document.getElementById("next-page")?.addEventListener("click", () => {
         nav.goForward(true, (done) => pmc.debug(`next-page is ${done}`));
-        toggleLoadingMessage(true);
+        store.dispatch(setPublicationIsLoading(true));
       });
       document.getElementById("previous-page")?.addEventListener("click", () => {
         nav.goBackward(true, (done) => pmc.debug(`previous-page is ${done}`));
-        toggleLoadingMessage(true);
+        store.dispatch(setPublicationIsLoading(true));
       })
     }).catch((error) => {
       pmc.error("Error loading manifest", error);
