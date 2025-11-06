@@ -13,3 +13,8 @@ export type WordPositionInfo = {
   documentTextNodeChunkIndex : number
   wordCharPos : number
 }
+
+export type ReadAloudHighlight = {
+  characters : string
+  rect : { top: number, left: number, width: number, height: number}
+}

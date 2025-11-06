@@ -6,21 +6,35 @@ import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
 import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible } from './core/textNodeHelper';
-import { type WordPositionInfo } from "./core/types";
+import { type ReadAloudHighlight, type WordPositionInfo } from "./core/types";
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent, type ReadiumSpeechVoice } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 import { createPoorMansConsole } from "./util/poorMansConsole";
 import { store } from './core/store';
-import { setDocumentTextNodes, setLastKnownWordPosition, setPublicationIsLoading } from './core/readaloudNavigationSlice';
+import { setDocumentTextNodes, setHightlights, setLastKnownWordPosition, setPublicationIsLoading } from './core/readaloudNavigationSlice';
 
 const { isAndroid } = detectPlatformFeatures()
 const pmc = createPoorMansConsole(document.getElementById("debug")!);
+const container = document.getElementById("container")!;
 
-
-store.subscribe(() => {
-  const { publicationIsLoading } = store.getState().readaloudNavigation;
+function renderHtmlElements() {
+  const { publicationIsLoading, highlights, lastKnownWordPosition } = store.getState().readaloudNavigation;
   document.querySelectorAll("#loading-message").forEach((el) => (el as HTMLElement).style.display = publicationIsLoading ? "block" : "none");
-});
+  document.querySelectorAll(".word-highlight").forEach((el) => el.remove())
+  highlights.forEach(({ rect, characters }) => {
+     const hlDiv = document.createElement("div");
+     hlDiv.innerHTML = characters;
+     hlDiv.className = "word-highlight";
+     hlDiv.style.top = `${rect.top}px`;
+     hlDiv.style.left = `${rect.left}px`;
+     hlDiv.style.width = `${rect.width}px`;
+     hlDiv.style.height = `${rect.height}px`;
+     container.appendChild(hlDiv);
+   });
+   pmc.debug("rendered", highlights, lastKnownWordPosition);
+}
+
+store.subscribe(renderHtmlElements);
 
 const navigator = new WebSpeechReadAloudNavigator()
 const playButton = document.getElementById("play-readaloud")!;
@@ -83,28 +97,6 @@ async function initVoices() {
     }
 }
 navigator.on("ready", initVoices);
-
-
-const container = document.getElementById("container")!;
-
-function clearHighlights() {
-  document.querySelectorAll(".word-highlight").forEach((el) => el.remove())
- 
-}
-
-function setWordRects(wordRects : DOMRect[]) {
-  clearHighlights();
-  wordRects.forEach((rect) => {
-    const hlDiv = document.createElement("div");
-    hlDiv.className = "word-highlight";
-    hlDiv.style.top = `${rect.top}px`;
-    hlDiv.style.left = `${rect.left}px`;
-    hlDiv.style.width = `${rect.right - rect.left}px`;
-    hlDiv.style.height = `${rect.bottom - rect.top}px`;
-    container.appendChild(hlDiv);
-  });
-}
-
 
 function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
   const { documentTextNodes } = store.getState().readaloudNavigation;
@@ -218,7 +210,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
     case "loading":
       playButton.setAttribute("disabled", "disabled");
       playButton.querySelector("img")?.setAttribute("src", "../icons/play.svg")
-      clearHighlights();
+      store.dispatch(setHightlights([]))
       break;
     case "ready":
     case "idle":
@@ -231,7 +223,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   }
 
   if (type === "end") {
-    clearHighlights();
+    store.dispatch(setHightlights([]))
   }
 
   if (type === "boundary" && navigator.getState() === "playing") {
@@ -251,7 +243,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
         }
     }
     if (firstTextNodeIndex > -1) {
-      let newWordRects : DOMRect[] = []
+      let newWordRects : ReadAloudHighlight[] = []
       for (let rtnIdx = firstTextNodeIndex; rtnIdx <= lastTextNodeIndex; rtnIdx++) {
           const rtn = documentTextNodes[utIdx].rangedTextNodes[rtnIdx];
           const chBegin = charIndex - rtn.parentStartCharIndex;
@@ -262,10 +254,14 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
           range.setStart(rtn.textNode, rangeBegin);
           range.setEnd(rtn.textNode, rangeEnd);
           for (let i = 0; i < range.getClientRects().length; i++) {
-              newWordRects.push(range.getClientRects().item(i)!);
+            const domRect = range.getClientRects().item(i)!
+            newWordRects.push({
+              characters: range.cloneContents().textContent,
+              rect: domRect
+            });
           }
       }
-      setWordRects(newWordRects)
+      store.dispatch(setHightlights(newWordRects))
       store.dispatch(setLastKnownWordPosition({
         wordCharPos: (charIndex + charLength) - documentTextNodes[utIdx].rangedTextNodes[firstTextNodeIndex].parentStartCharIndex,
         rangedTextNodeIndex: firstTextNodeIndex,
@@ -309,7 +305,7 @@ async function init(bookId: string) {
 
         },
         positionChanged: function (locator: Locator): void {
-          clearHighlights();
+          store.dispatch(setHightlights([]))
           pmc.debug("positionChanged locator=", locator)
           navigator.stop();
           const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
