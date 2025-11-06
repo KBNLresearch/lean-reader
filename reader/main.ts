@@ -375,7 +375,7 @@ async function init(bookId: string) {
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {
-            pmc.log("textSelected selection=", selection)
+            pmc.log("textSelected selection=", selection);
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
