@@ -55,6 +55,7 @@ async function initVoices() {
   voicesInitialized = true;
   try {
     const unfilteredVoices = await navigator.getVoices();
+    pmc.warn("CHECK VOICES ", unfilteredVoices)
     const dutchVoices = (unfilteredVoices).filter(v => v.language.startsWith("nl"))
     const voices = dutchVoices.length === 0 ? unfilteredVoices : dutchVoices;
     if (voices.length > 0) {
