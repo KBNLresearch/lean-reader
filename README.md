@@ -4,7 +4,7 @@
 - [x] Zelf ePub bestanden kunnen toevoegen aan, bekijken in en verwijderen van de reader
 - [x] In de edge browser uit alle Nederlandstalige stemmen kunnen kiezen
 - [x] Kunnen aanklikken waar er wordt begonnen met voorlezen
-- [ ] Kunnnen pauzeren en hervatten op woordniveau op een android device (alleen firefox momenteel)
+- [x] Kunnnen pauzeren en hervatten op woordniveau op een android device (alleen firefox momenteel)
 - [ ] Automatisch doorbladeren wanneer de voorlezer een volgende 'bladzijde' heeft bereikt
 - [ ] Automatisch doorscrollen wanneer de voorlezer dat punt bereikt
 - [ ] Een voorlezer die ook de hele zin highlight (*)
