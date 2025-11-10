@@ -14,7 +14,7 @@ import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent, type Read
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
 import { createPoorMansConsole } from "./util/poorMansConsole";
 import { store } from './core/store';
-import { setDocumentTextNodes, setHightlights, setLastKnownWordPosition, setPublicationIsLoading } from './core/readaloudNavigationSlice';
+import { setDocumentTextNodes, setHighlights, setLastKnownWordPosition, setPublicationIsLoading, setSelection } from './core/readaloudNavigationSlice';
 
 const { isAndroid } = detectPlatformFeatures()
 const pmc = createPoorMansConsole(document.getElementById("debug")!);
@@ -167,8 +167,12 @@ function changeVoiceTo(voice: ReadiumSpeechVoice) {
   navigator.setVoice(voice);
   localStorage.setItem(VOICE_URI_KEY, voice.voiceURI)
   if (shouldResume) {
-    const { lastKnownWordPosition } = store.getState().readaloudNavigation
-    jumpToWord(lastKnownWordPosition);
+    const { lastKnownWordPosition, selection } = store.getState().readaloudNavigation
+    if (selection) {
+      navigator.play();
+    } else {
+      jumpToWord(lastKnownWordPosition);
+    }
   }
 }
 
@@ -180,14 +184,18 @@ function adjustPlaybackRate(newRate : number) {
     const shouldResume = navigator.getState() === "playing";
     navigator.stop();
     if (shouldResume) {
-      const { lastKnownWordPosition } = store.getState().readaloudNavigation
-      jumpToWord(lastKnownWordPosition);
+      const { lastKnownWordPosition, selection } = store.getState().readaloudNavigation
+      if (selection) {
+        navigator.play();
+      } else {
+        jumpToWord(lastKnownWordPosition);
+      }
     }
   }
 }
 
 function onPlayButtonClicked() {
-  const { lastKnownWordPosition } = store.getState().readaloudNavigation
+  const { lastKnownWordPosition, selection } = store.getState().readaloudNavigation
   pmc.debug(`Play button clicked with navigator state: ${navigator.getState()}`);
   if (navigator.getState() === "playing") {
     if (isAndroid) {
@@ -199,7 +207,11 @@ function onPlayButtonClicked() {
   } else if (navigator.getState() === "paused") {
     navigator.play()
   } else if (lastKnownWordPosition.documentTextNodeChunkIndex > -1) {
-    jumpToWord(lastKnownWordPosition);
+    if (selection) {
+      navigator.play();
+    } else {
+      jumpToWord(lastKnownWordPosition);
+    }
   }
 }
 
@@ -214,7 +226,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
     case "loading":
       playButton.setAttribute("disabled", "disabled");
       playButton.querySelector("img")?.setAttribute("src", playIcon)
-      store.dispatch(setHightlights([]))
+      store.dispatch(setHighlights([]))
       break;
     case "ready":
     case "idle":
@@ -227,7 +239,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
   }
 
   if (type === "end") {
-    store.dispatch(setHightlights([]))
+    store.dispatch(setHighlights([]))
   }
 
   if (type === "boundary" && navigator.getState() === "playing") {
@@ -265,7 +277,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
             });
           }
       }
-      store.dispatch(setHightlights(newWordRects))
+      store.dispatch(setHighlights(newWordRects))
       store.dispatch(setLastKnownWordPosition({
         wordCharPos: (charIndex + charLength) - documentTextNodes[utIdx].rangedTextNodes[firstTextNodeIndex].parentStartCharIndex,
         rangedTextNodeIndex: firstTextNodeIndex,
@@ -286,9 +298,19 @@ navigator.on("mark", handleWebSpeechNavigatorEvent);
 navigator.on("voiceschanged", handleWebSpeechNavigatorEvent);
 navigator.on("stop", handleWebSpeechNavigatorEvent);
 
-function handleIframeClick(e : any) {
+function handleIframeClick(e : PointerEvent) {
   onPublicationClicked({x:  e.x, y: e.y + container.clientTop});
 }
+
+function handleIframeRelease(e : MouseEvent|TouchEvent) {
+  const selectedText = e.view?.getSelection()?.toString() ?? "";
+  if (selectedText.length === 0) {
+    store.dispatch(setSelection(undefined));
+  } else {
+    store.dispatch(setSelection(selectedText));
+  }
+}
+
 
 async function init(bookId: string) {
   const publicationURL = `${import.meta.env.VITE_MANIFEST_SRC}/${bookId}/manifest.json`;
@@ -309,7 +331,7 @@ async function init(bookId: string) {
 
         },
         positionChanged: function (locator: Locator): void {
-          store.dispatch(setHightlights([]))
+          store.dispatch(setHighlights([]))
           pmc.debug("positionChanged locator=", locator)
           navigator.stop();
           const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
@@ -318,6 +340,11 @@ async function init(bookId: string) {
             const fr = visibleFrames[0];
             fr.contentWindow?.removeEventListener("click", handleIframeClick);
             fr.contentWindow?.addEventListener("click", handleIframeClick)
+            fr.contentWindow?.removeEventListener("mouseup", handleIframeRelease)
+            fr.contentWindow?.addEventListener("mouseup", handleIframeRelease)
+            fr.contentWindow?.removeEventListener("touchend", handleIframeRelease)
+            fr.contentWindow?.addEventListener("touchend", handleIframeRelease)
+
             const navWnd = (fr as HTMLIFrameElement).contentWindow;
 
             const newDocumentTextNodes = gatherAndPrepareTextNodes(navWnd!);
@@ -376,6 +403,9 @@ async function init(bookId: string) {
         },
         textSelected: function (selection: BasicTextSelection): void {
             pmc.log("textSelected selection=", selection);
+            navigator.stop();
+            navigator.loadContent([{id: "selection",  text: selection.text}]);
+            navigator.play();
         }
       };
       const nav = new EpubNavigator(container, publication, listeners);
@@ -404,4 +434,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-window.addEventListener("unload", () => navigator.stop());
+window.addEventListener("beforeunload", () => navigator.stop());

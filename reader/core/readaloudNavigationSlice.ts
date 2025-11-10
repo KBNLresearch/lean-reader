@@ -6,6 +6,7 @@ type ReadaloudNavigationState = {
     lastKnownWordPosition : WordPositionInfo
     publicationIsLoading : boolean
     highlights : ReadAloudHighlight[]
+    selection? : string
 }
 
 const initialState : ReadaloudNavigationState = {
@@ -32,8 +33,12 @@ export const readaloudNavigationSlice = createSlice({
         setPublicationIsLoading(state, { payload }) {
             state.publicationIsLoading = payload;
         },
-        setHightlights(state, { payload }) {
+        setHighlights(state, { payload }) {
             state.highlights = payload
+        },
+        setSelection(state, { payload }) {
+            state.selection = payload
+            state.highlights = []
         }
     }
 });
@@ -42,6 +47,7 @@ export const {
     setLastKnownWordPosition,
     setDocumentTextNodes,
     setPublicationIsLoading,
-    setHightlights
+    setHighlights,
+    setSelection
 } = readaloudNavigationSlice.actions;
 export default readaloudNavigationSlice.reducer;
