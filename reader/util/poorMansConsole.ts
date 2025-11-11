@@ -27,16 +27,12 @@ export function createPoorMansConsole(debug: HTMLElement): SmallConsole {
         debug.scrollTo(0, debug.scrollHeight)
     }
 
-    let toggledDebug = false;
     debug.addEventListener("click", () => {
-        if (toggledDebug) {
-            debug.style.height = "";
-            toggledDebug = false
-        } else {
-            debug.style.height = "45%";
-            toggledDebug = true
-        }
+        debug.style.display = "none";
     });
+    document.getElementById("open-debug")?.addEventListener("click", () => {
+        debug.style.display = "block";
+    })
 
     pmcInstance = {
         debug: (...args: any[]) => {

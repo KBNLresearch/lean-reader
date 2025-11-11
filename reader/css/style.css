@@ -49,36 +49,49 @@ h4 {
     font-style: normal;
 }
 
-#debug,
-header {
+footer,
+.header-footer {
     background-color: var(--kb-light-beige);
     margin: 0;
     position: fixed;
     width: calc(100% - 2em);
 }
 
-header {
+.header-footer {
     padding: var(--reader-header-padding);
     height: var(--reader-header-inner-height);
     display: flex;
 }
 
-header h1 {
+.header-footer h1 {
     height: 100%;
     font-size: 1.5em;
     flex-grow: 1;
 }
 
-#debug {
+footer {
     padding: var(--reader-footer-padding);
     bottom: 0;
     height: var(--reader-footer-inner-height);
-    overflow-y: auto;
+    overflow: hidden;
 }
+
+#debug {
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    width: 100%;
+    padding: 1em;
+    top: 50%;
+    height: 50%;
+    background-color: var(--kb-light-beige);
+    display: none;
+}
+
 
 #debug div {
     padding: 4px 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.1)
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 a {
@@ -89,15 +102,15 @@ a:hover {
     color: var(--kb-link-hover)
 }
 
-header a {
+.header-footer a {
     text-decoration: none;
     font-size: 1.5em;
 }
 
-header button,
-header select,
-header a,
-header span {
+.header-footer button,
+.header-footer select,
+.header-footer a,
+.header-footer span {
     height: 100%;
     display: inline-block;
     border-radius: 0;
@@ -105,32 +118,32 @@ header span {
     border-color: black;
 }
 
-header button {
+.header-footer button {
     border-radius: 4px;
 }
 
-header button:active {
+.header-footer button:active {
     outline: 1px solid var(--kb-link-active);
     background-color: var(--kb-gray);
 }
 
 
-header button:hover {
+.header-footer button:hover {
     outline: 1px solid var(--kb-link-active);
 }
 
-header button:hover>img {
+.header-footer button:hover>img {
     filter: invert(14%) sepia(25%) saturate(7340%) hue-rotate(219deg) brightness(86%) contrast(117%);
 }
 
 
-header a>img,
-header button>img {
+.header-footer a>img,
+.header-footer button>img {
     margin-top: 2px;
     height: calc(100% - 4px);
 }
 
-header button#rate-percentage {
+.header-footer button#rate-percentage {
     padding: 3px;
     border: none;
     border-top: 1px solid;
@@ -142,28 +155,28 @@ header button#rate-percentage {
     z-index: 1;
 }
 
-header #voice-select {
+.header-footer #voice-select {
     max-width: calc(100% - 160px);
 }
 
-header #play-readaloud {
+.header-footer #play-readaloud {
     margin-right: 1em;
     margin-left: 0.25em;
 }
 
-header #rate-slower,
-header #rate-faster {
+.header-footer #rate-slower,
+.header-footer #rate-faster {
     padding-inline-start: 2px;
     padding-inline-end: 2px;
 }
 
-header #rate-slower {
+.header-footer #rate-slower {
     border-right: none;
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
 }
 
-header #rate-faster {
+.header-footer #rate-faster {
     border-left: none;
     border-bottom-left-radius: 0;
     border-top-left-radius: 0;
