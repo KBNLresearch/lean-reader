@@ -332,7 +332,8 @@ async function init(bookId: string) {
         },
         positionChanged: function (locator: Locator): void {
           store.dispatch(setHighlights([]))
-          pmc.debug("positionChanged locator=", locator)
+          console.log(publication.readingOrder.items.length)
+          pmc.info("positionChanged locator=", locator)
           navigator.stop();
           const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
           if (visibleFrames.length > 0) {
@@ -398,7 +399,7 @@ async function init(bookId: string) {
             pmc.debug("customEvent key=", key, "data=", data)
         },
         handleLocator: function (locator: Locator): boolean {
-            pmc.debug("handleLocator locator=", locator);
+            pmc.info("handleLocator locator=", locator);
           return false;
         },
         textSelected: function (selection: BasicTextSelection): void {

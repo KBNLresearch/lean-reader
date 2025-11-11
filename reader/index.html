@@ -7,9 +7,10 @@
   </head>
   <body>
     <header class="header-footer">
-        <a href="../" title="Terug naar overzicht">
-          <img src="icons/arrow_back.svg" />
-        </a>
+      <a href="../" title="Terug naar overzicht">
+        <img src="icons/arrow_back.svg" />
+      </a>
+      <span class="centered">
         <select id="voice-select" title="Voorleesstem kiezen" disabled class="readaloud-control">
           <option selected disabled id="voices-are-pending"> - Stemmen laden... -</option>
         </select>
@@ -24,6 +25,7 @@
           <img src="icons/rate-faster.svg" alt="Afspeelsnelheid vertragen" />
         </button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
+      </span>
     </header>
     <div id="wrapper">
       <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
@@ -42,6 +44,9 @@
       <button title="open debug" id="open-debug">
         {}
       </button>
+      <span class="centered">
+        asd
+      </span>
     </footer>
     <pre id="debug">
     </pre>
