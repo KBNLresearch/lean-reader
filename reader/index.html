@@ -41,16 +41,18 @@
       </button>
     </div>
     <footer class="header-footer">
-      <button title="open debug" id="open-debug">
+      <button title="open debug" id="open-debug" type="button">
         {}
       </button>
       <span class="centered">
-        asd
+        <input id="paginate-yes" type="radio" name="paginate" value="yes" checked />
+        <label for="paginate-yes">Pagina's</label>
+        <input id="paginate-no" type="radio" name="paginate" value="no" />
+        <label for="paginate-no">Scrollen</label>
       </span>
     </footer>
     <pre id="debug">
     </pre>
-
     <script type="module" src="main.ts"></script>
   </body>
 </html>

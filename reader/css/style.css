@@ -80,10 +80,11 @@ footer {
     overflow-y: auto;
     position: fixed;
     left: 0;
-    width: 100%;
-    padding: 1em;
-    top: 50%;
-    height: 50%;
+    width: calc(100% - 2em);
+    padding: 1em 1em 0 1em;
+    margin: 0;
+    bottom: 0px;
+    height: 250px;
     background-color: var(--kb-light-beige);
     display: none;
 }
@@ -189,6 +190,22 @@ a:hover {
     border-top-left-radius: 0;
 }
 
+.header-footer input[type='radio'] {
+    display: none;
+}
+
+.header-footer input[type='radio'] + label {
+    cursor: pointer;
+    padding-top: 6px;
+    margin-left: 1em;
+}
+
+.header-footer input[type='radio']:checked + label {
+    cursor: default;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 
 #wrapper {
     padding-top: var(--reader-header-height);
@@ -205,8 +222,10 @@ a:hover {
 
 main#listing {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
+    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
     padding-top: var(--reader-header-height);
+    overflow-y: auto;
 }
 
 ul#boek-entry-list {

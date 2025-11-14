@@ -102,6 +102,19 @@ async function initVoices() {
 }
 navigator.on("ready", initVoices);
 
+
+function initializePreferenceButtons(nav : EpubNavigator) {
+  document.querySelectorAll("[name='paginate']")?.forEach((el) => el.addEventListener("change", (ev) => {
+    const scrollWasSelected = (ev.target as HTMLInputElement).value === "no";
+    const editor = nav.preferencesEditor;
+    if (scrollWasSelected !== editor.scroll.effectiveValue) {
+      editor.scroll.toggle();
+      nav.submitPreferences(editor.preferences);
+    }
+  }));
+}
+
+
 function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
   const { documentTextNodes } = store.getState().readaloudNavigation;
   for (let dtnIdx = 0; dtnIdx < documentTextNodes.length; dtnIdx++) {
@@ -288,6 +301,7 @@ function handleWebSpeechNavigatorEvent({ type, detail } : ReadiumSpeechPlaybackE
 }
 
 
+
 navigator.on("start",handleWebSpeechNavigatorEvent);
 navigator.on("end", handleWebSpeechNavigatorEvent);
 navigator.on("pause", handleWebSpeechNavigatorEvent);
@@ -367,15 +381,28 @@ async function init(bookId: string) {
             store.dispatch(setPublicationIsLoading(true));
           }
         
-          if (nav.canGoForward) {
-            document.getElementById("next-page")!.style.visibility = "visible";
+          if (nav.preferencesEditor.scroll.effectiveValue) {
+            if (nav.canGoForward && nav.isScrollEnd) {
+              document.getElementById("next-page")!.style.visibility = "visible";
+            } else {
+              document.getElementById("next-page")!.style.visibility = "hidden";
+            }
+            if (nav.canGoBackward && nav.isScrollStart) {
+              document.getElementById("previous-page")!.style.visibility = "visible";
+            } else {
+              document.getElementById("previous-page")!.style.visibility = "hidden";
+            }
           } else {
-            document.getElementById("next-page")!.style.visibility = "hidden";
-          }
-          if (nav.canGoBackward) {
-            document.getElementById("previous-page")!.style.visibility = "visible";
-          } else {
-            document.getElementById("previous-page")!.style.visibility = "hidden";
+            if (nav.canGoForward) {
+              document.getElementById("next-page")!.style.visibility = "visible";
+            } else {
+              document.getElementById("next-page")!.style.visibility = "hidden";
+            }
+            if (nav.canGoBackward) {
+              document.getElementById("previous-page")!.style.visibility = "visible";
+            } else {
+              document.getElementById("previous-page")!.style.visibility = "hidden";
+            }
           }
         },
         tap: function (e: FrameClickEvent): boolean {
@@ -412,17 +439,31 @@ async function init(bookId: string) {
       const nav = new EpubNavigator(container, publication, listeners);
       await nav.load();
       document.getElementById("next-page")?.addEventListener("click", () => {
-        nav.goForward(true, (done) => pmc.debug(`next-page is ${done}`));
+        nav.goForward(true, (done) => {
+          if (!done) {
+            document.getElementById("next-page")!.style.visibility = 'hidden';
+            store.dispatch(setPublicationIsLoading(false));
+          }
+        });
         store.dispatch(setPublicationIsLoading(true));
       });
       document.getElementById("previous-page")?.addEventListener("click", () => {
-        nav.goBackward(true, (done) => pmc.debug(`previous-page is ${done}`));
+        nav.goBackward(true, (done) => {
+          if (!done) {
+            document.getElementById("previous-page")!.style.visibility = 'hidden';
+            store.dispatch(setPublicationIsLoading(false));
+          }
+        });
         store.dispatch(setPublicationIsLoading(true));
       })
+
+      initializePreferenceButtons(nav);
+
     }).catch((error) => {
       pmc.error("Error loading manifest", error);
       alert(`Failed loading manifest ${selfLink}`);
     });
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
