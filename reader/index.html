@@ -6,10 +6,11 @@
     <title>lean-reader</title>
   </head>
   <body>
-    <header>
-        <a href="../" title="Terug naar overzicht">
-          <img src="icons/arrow_back.svg" />
-        </a>
+    <header class="header-footer">
+      <a href="../" title="Terug naar overzicht">
+        <img src="icons/arrow_back.svg" />
+      </a>
+      <span class="centered">
         <select id="voice-select" title="Voorleesstem kiezen" disabled class="readaloud-control">
           <option selected disabled id="voices-are-pending"> - Stemmen laden... -</option>
         </select>
@@ -24,6 +25,7 @@
           <img src="icons/rate-faster.svg" alt="Afspeelsnelheid vertragen" />
         </button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
+      </span>
     </header>
     <div id="wrapper">
       <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
@@ -38,8 +40,18 @@
         <img src="icons/arrow_forward.svg" />
       </button>
     </div>
+    <footer class="header-footer">
+      <button title="open debug" id="open-debug" type="button" style="display: none;">
+        {}
+      </button>
+      <span class="centered">
+        <input id="paginate-yes" type="radio" name="paginate" value="yes" checked />
+        <label for="paginate-yes">Pagina's</label>
+        <input id="paginate-no" type="radio" name="paginate" value="no" />
+        <label for="paginate-no">Scrollen</label>
+      </span>
+    </footer>
     <pre id="debug">
-
     </pre>
     <script type="module" src="main.ts"></script>
   </body>
