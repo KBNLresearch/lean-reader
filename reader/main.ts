@@ -8,7 +8,7 @@ import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
-import { gatherAndPrepareTextNodes, getWordCharPosAtXY, isTextNodeVisible } from './core/textNodeHelper';
+import { gatherAndPrepareTextNodes, getFirstVisibleWordCharPos, getWordCharPosAtXY, isTextNodeVisible } from './core/textNodeHelper';
 import { type ReadAloudHighlight, type WordPositionInfo } from "./core/types";
 import { WebSpeechReadAloudNavigator, type ReadiumSpeechPlaybackEvent, type ReadiumSpeechVoice } from './readium-speech';
 import { detectPlatformFeatures } from './readium-speech/utils/patches';
@@ -131,7 +131,7 @@ function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositi
 }
 
 
-function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo) {
+function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharPos} : WordPositionInfo, shouldPause = false) {
   pmc.debug(`jumping to word at: dtn=${documentTextNodeChunkIndex}, rtn=${rangedTextNodeIndex}, wrd=${wordCharPos}`);
   if (documentTextNodeChunkIndex < 0) { 
     return
@@ -152,7 +152,9 @@ function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharP
     id: `${idx}`,
     text: idx === documentTextNodeChunkIndex ?  " ".repeat(utChIdx) + utteranceStrAfter : dtn.utteranceStr
   })));
-  navigator.jumpTo(documentTextNodeChunkIndex);
+  if (!shouldPause) {
+    navigator.jumpTo(documentTextNodeChunkIndex);
+  }
 }
 
 
@@ -348,6 +350,7 @@ async function init(bookId: string) {
           store.dispatch(setHighlights([]))
           console.log(publication.readingOrder.items.length)
           pmc.info("positionChanged locator=", locator)
+          const shouldResume = navigator.getState() === "playing";
           navigator.stop();
           const visibleFrames = [...document.querySelectorAll("iframe")].filter((fr) => fr.style.visibility !== "hidden");
           if (visibleFrames.length > 0) {
@@ -373,9 +376,15 @@ async function init(bookId: string) {
             }).filter((idx) => idx > -1);
 
             if (utteranceIndices.length > 0) {
-              store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}));
+              const rtnIdx = newDocumentTextNodes[utteranceIndices[0]].rangedTextNodes.findIndex((rt) => isTextNodeVisible(navWnd!, rt.textNode));
+              const wordCharPos = getFirstVisibleWordCharPos(navWnd!, newDocumentTextNodes[utteranceIndices[0]].rangedTextNodes[rtnIdx].textNode);
+              jumpToWord({
+                documentTextNodeChunkIndex: utteranceIndices[0],
+                rangedTextNodeIndex: rtnIdx,
+                wordCharPos: wordCharPos
+              }, !shouldResume)
             } else {
-              store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: utteranceIndices[0], wordCharPos: 0, rangedTextNodeIndex: 0}));
+              store.dispatch(setLastKnownWordPosition({documentTextNodeChunkIndex: 0, wordCharPos: 0, rangedTextNodeIndex: 0}));
             }
           } else {
             store.dispatch(setPublicationIsLoading(true));

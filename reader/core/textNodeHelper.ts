@@ -2,11 +2,7 @@ import type { DocumentTextNodesChunk, RangedTextNode } from "./types";
 
 export const UNICODE_WORD_REGEX = /[\p{Letter}\p{Number}]+/ug
 
-export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
-    const range = new Range();
-    range.setStart(textNode, 0);
-    range.setEnd(textNode, textNode.textContent!.length)
-    const rect = range.getBoundingClientRect();
+function isDOMRectVisible(wnd : Window, rect : DOMRect): boolean {
     const viewport = {
         width: wnd.innerWidth || wnd.document.documentElement.clientWidth,
         height: wnd.innerHeight || wnd.document.documentElement.clientHeight
@@ -16,6 +12,13 @@ export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
         return false;
     }
     return true;
+}
+
+export function isTextNodeVisible(wnd : Window, textNode : Node): boolean {
+    const range = new Range();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, textNode.textContent!.length)
+    return isDOMRectVisible(wnd, range.getBoundingClientRect());
 }
 
 function getElementsWithOwnText(wnd : Window|null, currentElement? : Element, gathered? : HTMLElement[]): HTMLElement[] {
@@ -84,7 +87,8 @@ export function gatherAndPrepareTextNodes(wnd : Window): DocumentTextNodesChunk[
 }
 
 
-export function getWordCharPosAtXY(x : number, y : number, textNode : Node) : number {
+
+function getWordCharPosFor(textNode : Node, testFn : (wordRect : DOMRect) => boolean) : number {
     if (!textNode.textContent || textNode.textContent.length === 0) { return -1; }
 
     const matches = textNode.textContent.matchAll(UNICODE_WORD_REGEX);
@@ -103,10 +107,18 @@ export function getWordCharPosAtXY(x : number, y : number, textNode : Node) : nu
         range.getClientRects()
         for (let i = 0; i < range.getClientRects().length; i++) {
             const rect = range.getClientRects().item(i);
-            if (rect && x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height ) {
+            if (rect && testFn(rect)) {
                 return startPos;
             }
         }
     }
     return -1;
 }
+
+
+export const getWordCharPosAtXY = (x : number, y : number, textNode : Node) =>
+    getWordCharPosFor(textNode, (wordRect) =>  x >= wordRect.x && x <= wordRect.x + wordRect.width && y >= wordRect.y && y <= wordRect.y + wordRect.height)
+
+
+export const getFirstVisibleWordCharPos = (wnd : Window, textNode : Node) =>
+    getWordCharPosFor(textNode, (wordRect) => isDOMRectVisible(wnd, wordRect));
