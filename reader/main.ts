@@ -56,7 +56,7 @@ async function initVoices() {
   try {
     const unfilteredVoices = await navigator.getVoices();
     pmc.warn("CHECK VOICES ", unfilteredVoices)
-    const dutchVoices = (unfilteredVoices).filter(v => v.language.startsWith("nl"))
+    const dutchVoices = (unfilteredVoices).filter(v => v.language.startsWith("nl-NL"))
     const voices = dutchVoices.length === 0 ? unfilteredVoices : dutchVoices;
     if (voices.length > 0) {
       voices.forEach((voice, idx) => {
@@ -65,7 +65,11 @@ async function initVoices() {
         if (voice.voiceURI === localStorage.getItem(VOICE_URI_KEY)) {
           opt.setAttribute("selected", "selected");
         }
-        opt.innerHTML = `${voice.name} - ${voice.language}`
+        opt.innerHTML = `${voice.name
+            .replace("Microsoft ", "")
+            .replace(/\s.*$/, "")
+        }`
+        pmc.log(voice)
         voiceSelect.appendChild(opt);
       })
       const storedVoice = voices.find((v) => v.voiceURI === localStorage.getItem(VOICE_URI_KEY));
