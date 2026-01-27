@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lean-reader</title>
-    <script type="module" crossorigin src="/lean-reader/assets/reader-C5S4fM8l.js"></script>
-    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-4nMSlQ8f.js">
-    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-4xmtn6Nt.css">
+    <script type="module" crossorigin src="/lean-reader/assets/reader-De87vrpA.js"></script>
+    <link rel="modulepreload" crossorigin href="/lean-reader/assets/style-m8DQWqyx.js">
+    <link rel="stylesheet" crossorigin href="/lean-reader/assets/style-RI4Ny_Q4.css">
     <link rel="stylesheet" crossorigin href="/lean-reader/assets/reader-Bro2NdH4.css">
   </head>
   <body>
@@ -21,13 +21,8 @@
         <button id="play-readaloud" title="Afspelen met voorleesstem" type="button" style="display: none;" class="readaloud-control">
           <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20height='24px'%20viewBox='0%20-960%20960%20960'%20width='24px'%20fill='Inherit'%3e%3cpath%20d='m%20758.36716,-480%20-480,480%20v%20-960%20z'%20/%3e%3c/svg%3e" alt="Afspelen met voorleesstem" />
         </button>
-        <button id="rate-slower" title="Afspeelsnelheid vertragen" type="button" style="display: none;" class="readaloud-control">
-          <img src="data:image/svg+xml,%3csvg%20width='24px'%20height='24px'%20fill='Inherit'%20version='1.1'%20viewBox='0%20-960%20960%20960'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%3e%3cpath%20d='m480-329.83-318.49-318.49h636.98z'/%3e%3cpath%20d='m480-11.341-318.49-318.49h636.98z'/%3e%3cpath%20d='m480-641.51-318.49-318.49h636.98z'/%3e%3c/g%3e%3c/svg%3e" alt="Afspeelsnelheid vertragen" />
-        </button>
+        <input type="range" id="rate-slider" min="10" max="200" step="10" value="100" title="100%">
         <button id="rate-percentage" style="display: none;" class="readaloud-control">100%</button>
-        <button id="rate-faster" title="Afspeelsnelheid verhogen" type="button" style="display: none;" class="readaloud-control">
-          <img src="data:image/svg+xml,%3csvg%20width='24px'%20height='24px'%20fill='Inherit'%20version='1.1'%20viewBox='0%20-960%20960%20960'%20xmlns='http://www.w3.org/2000/svg'%3e%3cg%3e%3cpath%20d='m480-641.51-318.49%20318.49h636.98z'/%3e%3cpath%20d='m480-960-318.49%20318.49h636.98z'/%3e%3cpath%20d='m480-329.83-318.49%20318.49h636.98z'/%3e%3c/g%3e%3c/svg%3e" alt="Afspeelsnelheid vertragen" />
-        </button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
       </span>
     </header>

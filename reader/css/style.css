@@ -151,17 +151,7 @@ a:hover {
     justify-content: center;
 }
 
-.header-footer button#rate-percentage {
-    padding: 3px;
-    border: none;
-    border-top: 1px solid;
-    border-bottom: 1px solid;
-    background-color: var(--kb-web-gray);
-    border-radius: 0;
-    cursor: default;
-    user-select: none;
-    z-index: 1;
-}
+
 
 .header-footer #voice-select {
     max-width: calc(100% - 160px);
@@ -172,23 +162,6 @@ a:hover {
     margin-left: 0.25em;
 }
 
-.header-footer #rate-slower,
-.header-footer #rate-faster {
-    padding-inline-start: 2px;
-    padding-inline-end: 2px;
-}
-
-.header-footer #rate-slower {
-    border-right: none;
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.header-footer #rate-faster {
-    border-left: none;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
-}
 
 .header-footer input[type='radio'] {
     display: none;

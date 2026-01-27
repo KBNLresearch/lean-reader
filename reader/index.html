@@ -17,13 +17,8 @@
         <button id="play-readaloud" title="Afspelen met voorleesstem" type="button" style="display: none;" class="readaloud-control">
           <img src="icons/play.svg" alt="Afspelen met voorleesstem" />
         </button>
-        <button id="rate-slower" title="Afspeelsnelheid vertragen" type="button" style="display: none;" class="readaloud-control">
-          <img src="icons/rate-slower.svg" alt="Afspeelsnelheid vertragen" />
-        </button>
+        <input type="range" id="rate-slider" min="10" max="200" step="10" value="100" title="100%">
         <button id="rate-percentage" style="display: none;" class="readaloud-control">100%</button>
-        <button id="rate-faster" title="Afspeelsnelheid verhogen" type="button" style="display: none;" class="readaloud-control">
-          <img src="icons/rate-faster.svg" alt="Afspeelsnelheid vertragen" />
-        </button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
       </span>
     </header>

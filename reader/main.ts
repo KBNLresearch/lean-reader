@@ -41,9 +41,9 @@ store.subscribe(renderHtmlElements);
 
 const navigator = new WebSpeechReadAloudNavigator()
 const playButton = document.getElementById("play-readaloud")!;
-const rateSlowerButton = document.getElementById("rate-slower")!;
-const rateFasterButton = document.getElementById("rate-faster")!;
 const rateNormalButton = document.getElementById("rate-percentage")!;
+const rateSlider : HTMLInputElement = document.getElementById("rate-slider")! as HTMLInputElement;
+
 const VOICE_URI_KEY = "voiceURI";
 let voicesInitialized = false;
 const voiceSelect = document.getElementById("voice-select")!;
@@ -89,9 +89,17 @@ async function initVoices() {
         voiceSelect.removeAttribute("disabled");
       }
       playButton.addEventListener("click", onPlayButtonClicked);
-      rateFasterButton.addEventListener("click", () => adjustPlaybackRate(navigator.getPlaybackRate() + 0.25));
-      rateSlowerButton.addEventListener("click", () => adjustPlaybackRate(navigator.getPlaybackRate() - 0.25));
-      rateNormalButton.addEventListener("click", () => adjustPlaybackRate(1.0));
+      rateNormalButton.addEventListener("click", (ev) => { 
+        rateSlider.value = "100";
+        (ev.target as HTMLElement).innerHTML = "100%";
+        adjustPlaybackRate(1.0);
+      });
+      rateSlider.addEventListener("change", (ev) => adjustPlaybackRate(parseFloat((ev.target as HTMLInputElement).value) * 0.01))
+      rateSlider.addEventListener("input", (ev) => {
+        rateNormalButton.innerHTML = (ev.target as HTMLInputElement).value + "%";
+        rateSlider.title = (ev.target as HTMLInputElement).value + "%";
+      })
+
       document.querySelectorAll(".readaloud-control").forEach((el) => { (el as HTMLElement).style.display = "inline-block"; })
     } else {
       document.getElementById("no-voices-found")!.style.display = "inline";
@@ -199,7 +207,6 @@ function changeVoiceTo(voice: ReadiumSpeechVoice) {
 function adjustPlaybackRate(newRate : number) {
   if (newRate > 0.0 && newRate <= 2.0) {
     navigator.setRate(newRate);
-    rateNormalButton.innerHTML = `${Math.floor(navigator.getPlaybackRate() * 100)}%`;
     const shouldResume = navigator.getState() === "playing";
     navigator.stop();
     if (shouldResume) {
