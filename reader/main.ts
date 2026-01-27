@@ -92,6 +92,7 @@ async function initVoices() {
       rateNormalButton.addEventListener("click", (ev) => { 
         rateSlider.value = "100";
         (ev.target as HTMLElement).innerHTML = "100%";
+        rateSlider.title = "100%";
         adjustPlaybackRate(1.0);
       });
       rateSlider.addEventListener("change", (ev) => adjustPlaybackRate(parseFloat((ev.target as HTMLInputElement).value) * 0.01))
