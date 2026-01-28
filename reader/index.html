@@ -47,7 +47,7 @@
         <label>
           <input id="letter-size" type="radio" name="pick-setting" value="letter-size"/>
           <img src="icons/match_case.svg" alt="Lettergrootte instellen" title="Lettergrootte instellen" />
-          <input type="range" min="10" max="400" value="100" step="20" id="change-text-size" title="Lettergrootte: 100%" />
+          <input type="range" min="70" max="400" value="100" step="10" id="change-letter-size" title="Lettergrootte: 100%" />
           <button id="letter-size-percentage" title="Lettergrootte terugzetten" >100%</button>
         </label>
         <label>
@@ -55,6 +55,12 @@
           <img src="icons/density_small.svg" alt="Witruimte tussen regels instellen" title="Witruimte tussen regels instellen" />
           <input type="range" min="0" max="200" value="100" id="change-line-spacing" title="Witruimte tussen regels: 100%" />
           <button id="line-height-percentage" title="Witruimte tussen regels terugzetten" >100%</button>
+        </label>
+        <label>
+          <input id="word-spacing" type="radio" name="pick-setting" value="word-spacing"/>
+          <img src="icons/word_spacing.svg" alt="Witruimte tussen woorden instellen" title="Witruimte tussen woorden instellen" />
+          <input type="range" min="0" max="200" value="100" id="change-word-spacing" title="Witruimte tussen woorden: 100%" />
+          <button id="word-spacing-percentage" title="Witruimte tussen woorden terugzetten" >100%</button>
         </label>
       </span>
     </footer>

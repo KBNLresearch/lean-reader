@@ -117,14 +117,31 @@ navigator.on("ready", initVoices);
 
 
 function initializePreferenceButtons(nav : EpubNavigator) {
+  const prefEdit = nav.preferencesEditor;
   document.querySelectorAll("[name='paginate']")?.forEach((el) => el.addEventListener("change", (ev) => {
     const scrollWasSelected = (ev.target as HTMLInputElement).value === "no";
-    const editor = nav.preferencesEditor;
-    if (scrollWasSelected !== editor.scroll.effectiveValue) {
-      editor.scroll.toggle();
-      nav.submitPreferences(editor.preferences);
+    if (scrollWasSelected !== prefEdit.scroll.effectiveValue) {
+      prefEdit.scroll.toggle();
+      nav.submitPreferences(prefEdit.preferences);
     }
   }));
+
+  const letterSizeSlider = document.getElementById("change-letter-size") as HTMLInputElement;
+  const letterSizeReset = document.getElementById("letter-size-percentage");
+  letterSizeSlider.addEventListener("input", () => {
+    letterSizeSlider.title = `Lettergrootte: ${letterSizeSlider.value}%`;
+    letterSizeReset!.innerHTML = `${letterSizeSlider.value}%`;
+    prefEdit.fontSize.value = parseFloat(letterSizeSlider.value) * 0.01;
+    nav.submitPreferences(prefEdit.preferences)
+  })
+
+  letterSizeReset?.addEventListener("click", () => {
+    letterSizeSlider.value = "100";
+    letterSizeSlider.title = `Lettergrootte: 100%`;
+    letterSizeReset!.innerHTML = `100%`;
+    prefEdit.fontSize.value = 1.0;
+    nav.submitPreferences(prefEdit.preferences)
+  })
 }
 
 
@@ -169,7 +186,6 @@ function jumpToWord({ rangedTextNodeIndex, documentTextNodeChunkIndex, wordCharP
     navigator.jumpTo(documentTextNodeChunkIndex);
   }
 }
-
 
 function onPublicationClicked({x, y} : {x: number, y : number}) {
   pmc.debug(`Frame clicked at ${x}/${y}`);
