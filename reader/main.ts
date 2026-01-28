@@ -4,7 +4,7 @@ import playIcon from './icons/play.svg';
 import pauseIcon from './icons/pause.svg';
 
 import { type FrameClickEvent, type BasicTextSelection } from '@readium/navigator-html-injectables';
-import { EpubNavigator, type EpubNavigatorListeners } from "@readium/navigator";
+import { EpubNavigator, EpubPreferencesEditor, RangePreference, type EpubNavigatorListeners } from "@readium/navigator";
 import type { Fetcher, Locator } from "@readium/shared";
 import { HttpFetcher, Manifest, Publication } from "@readium/shared";
 import { Link } from "@readium/shared";
@@ -117,8 +117,8 @@ navigator.on("ready", initVoices);
 
 
 function initializePreferenceButtons(nav : EpubNavigator) {
-  const prefEdit = nav.preferencesEditor;
   document.querySelectorAll("[name='paginate']")?.forEach((el) => el.addEventListener("change", (ev) => {
+    const prefEdit = nav.preferencesEditor;
     const scrollWasSelected = (ev.target as HTMLInputElement).value === "no";
     if (scrollWasSelected !== prefEdit.scroll.effectiveValue) {
       prefEdit.scroll.toggle();
@@ -126,24 +126,45 @@ function initializePreferenceButtons(nav : EpubNavigator) {
     }
   }));
 
-  const letterSizeSlider = document.getElementById("change-letter-size") as HTMLInputElement;
-  const letterSizeReset = document.getElementById("letter-size-percentage");
-  letterSizeSlider.addEventListener("input", () => {
-    letterSizeSlider.title = `Lettergrootte: ${letterSizeSlider.value}%`;
-    letterSizeReset!.innerHTML = `${letterSizeSlider.value}%`;
-    prefEdit.fontSize.value = parseFloat(letterSizeSlider.value) * 0.01;
-    nav.submitPreferences(prefEdit.preferences)
-  })
+  initializePreferenceSettingSlider(
+    document.getElementById("change-letter-size") as HTMLInputElement,
+    document.getElementById("letter-size-percentage") as HTMLElement,
+    nav, "Lettergrootte", "fontSize"
+  );
 
-  letterSizeReset?.addEventListener("click", () => {
-    letterSizeSlider.value = "100";
-    letterSizeSlider.title = `Lettergrootte: 100%`;
-    letterSizeReset!.innerHTML = `100%`;
-    prefEdit.fontSize.value = 1.0;
-    nav.submitPreferences(prefEdit.preferences)
-  })
+  initializePreferenceSettingSlider(
+    document.getElementById("change-line-height") as HTMLInputElement,
+    document.getElementById("line-height-percentage") as HTMLElement,
+    nav, "Witruimte tussen regels", "lineHeight"
+  );
+
+  initializePreferenceSettingSlider(
+    document.getElementById("change-word-spacing") as HTMLInputElement,
+    document.getElementById("word-spacing-percentage") as HTMLElement,
+    nav, "Witruimte tussen woorden", "wordSpacing", 0
+  );
 }
 
+
+function initializePreferenceSettingSlider(input: HTMLInputElement, resetButton: HTMLElement, nav : EpubNavigator, labelText : string,
+    fieldKey : keyof EpubPreferencesEditor,
+    defaultValue : number = 100) {
+  const prefEdit = nav.preferencesEditor;
+  input.addEventListener("input", () => {
+    input.title = `${labelText}: ${input.value}%`;
+    resetButton!.innerHTML = `${input.value}%`;
+    (prefEdit[fieldKey] as RangePreference<number>).value = parseFloat(input.value) * 0.01;
+    nav.submitPreferences(prefEdit.preferences);
+  });
+
+  resetButton?.addEventListener("click", () => {
+    input.value = `${defaultValue}`;
+    input.title = `${labelText}: ${defaultValue}%`;
+    resetButton!.innerHTML = `${defaultValue}%`;
+     (prefEdit[fieldKey] as RangePreference<number>).value = defaultValue * 0.01;
+    nav.submitPreferences(prefEdit.preferences);
+  });
+}
 
 function findClickedOnWordPosition({x, y} : {x: number, y : number}): WordPositionInfo {
   const { documentTextNodes } = store.getState().readaloudNavigation;
