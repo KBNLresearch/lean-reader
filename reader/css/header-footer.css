@@ -116,21 +116,7 @@ footer {
     cursor: default;
 }
 
-.header-footer input[type='radio'] + img {
-    cursor: pointer;
-    border: 2px solid transparent;
-}
 
-.header-footer input[type='radio']:checked + img {
-    cursor: default;
-    border: 2px solid black;
-}
-
-.header-footer input[type='radio'] ~ input[type='range'],
-.header-footer input[type='radio'] ~ button {
-    display: none;
-    position: relative;
-}
 
 .header-footer input[type='radio'] ~ input[type='range'] {
     top: -4px;
@@ -151,4 +137,35 @@ footer {
 #no-voices-found {
     font-size: 0.8em;
     display: none;
+}
+
+.header-footer input[type='radio'] + img {
+    cursor: default;
+    border: 2px solid transparent;
+}
+
+.header-footer input[type='radio']:checked + img {
+    cursor: default;
+}
+
+.header-footer input[type='radio'] ~ input[type='range'],
+.header-footer input[type='radio'] ~ button {
+    position: relative;
+}
+
+@media (max-width: 800px) {
+    .header-footer input[type='radio'] + img {
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+
+    .header-footer input[type='radio']:checked + img {
+        cursor: default;
+        border: 2px solid black;
+    }
+
+    .header-footer input[type='radio'] ~ input[type='range'],
+    .header-footer input[type='radio'] ~ button {
+        display: none;
+    }
 }
