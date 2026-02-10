@@ -150,6 +150,19 @@ function initializePreferenceButtons(nav : EpubNavigator) {
     nav, "Witruimte tussen paragrafen", "paragraphSpacing"
   );
 
+  initializePreferenceSettingSlider(
+    document.getElementById("change-letter-spacing") as HTMLInputElement,
+    document.getElementById("letter-spacing-percentage") as HTMLElement,
+    nav, "Witruimte tussen letters", "letterSpacing", 0
+  );
+
+
+  initializePreferenceSettingSlider(
+    document.getElementById("change-paragraph-indent") as HTMLInputElement,
+    document.getElementById("paragraph-indent-percentage") as HTMLElement,
+    nav, "Witruimte tussen letters", "paragraphIndent", 0
+  );
+
   document.querySelectorAll("input[name='contrast-mode']").forEach((input) => {
     (input as HTMLInputElement).addEventListener("change", (ev) => {
       const targetStyle = (ev.target as HTMLElement).parentElement!.style;

@@ -167,7 +167,13 @@ footer.header-footer > div {
 }
 
 .header-footer input[type='range'] {
-    width: 75px;
+    width: 120px;
+}
+
+@media (max-width: 1280px) {
+    .header-footer input[type='range'] {
+        width: 75px;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -184,5 +190,9 @@ footer.header-footer > div {
     .header-footer input[type='radio'].radio-toggle ~ input[type='range'],
     .header-footer input[type='radio'].radio-toggle ~ button {
         display: none;
+    }
+
+    .header-footer input[type='range'] {
+        width: 240px;
     }
 }
