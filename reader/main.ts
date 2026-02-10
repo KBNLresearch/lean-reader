@@ -143,14 +143,25 @@ function initializePreferenceButtons(nav : EpubNavigator) {
     document.getElementById("word-spacing-percentage") as HTMLElement,
     nav, "Witruimte tussen woorden", "wordSpacing", 0
   );
+
+  document.querySelectorAll("input[name='contrast-mode']").forEach((input) => {
+    (input as HTMLInputElement).addEventListener("change", (ev) => {
+      const targetStyle = (ev.target as HTMLElement).parentElement!.style;
+      const prefEdit = nav.preferencesEditor;
+      prefEdit.backgroundColor.value = targetStyle.backgroundColor;
+      prefEdit.textColor.value = (ev.target as HTMLElement).parentElement!.style.color;
+      prefEdit.fontWeight.value = parseInt((ev.target as HTMLElement).parentElement!.style.fontWeight);
+      nav.submitPreferences(prefEdit.preferences);
+    })
+  })
 }
 
 
 function initializePreferenceSettingSlider(input: HTMLInputElement, resetButton: HTMLElement, nav : EpubNavigator, labelText : string,
     fieldKey : keyof EpubPreferencesEditor,
     defaultValue : number = 100) {
-  const prefEdit = nav.preferencesEditor;
   input.addEventListener("input", () => {
+    const prefEdit = nav.preferencesEditor;
     input.title = `${labelText}: ${input.value}%`;
     resetButton!.innerHTML = `${input.value}%`;
     (prefEdit[fieldKey] as RangePreference<number>).value = parseFloat(input.value) * 0.01;
@@ -158,6 +169,7 @@ function initializePreferenceSettingSlider(input: HTMLInputElement, resetButton:
   });
 
   resetButton?.addEventListener("click", () => {
+    const prefEdit = nav.preferencesEditor;
     input.value = `${defaultValue}`;
     input.title = `${labelText}: ${defaultValue}%`;
     resetButton!.innerHTML = `${defaultValue}%`;

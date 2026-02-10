@@ -24,11 +24,10 @@
     --kb-link-inactive: #7A847F;
     --kb-link-black: #333333;
     --reader-header-inner-height: 24px;
-    --reader-footer-inner-height: 16px;
+    --reader-footer-inner-height: 128px;
     --reader-header-padding: 1em;
-    --reader-footer-padding: 1em;
     --reader-header-height: calc(var(--reader-header-padding) * 2 + var(--reader-header-inner-height));
-    --reader-footer-height: calc(var(--reader-footer-padding) * 2 + var(--reader-footer-inner-height));
+    --reader-footer-height: var(--reader-footer-inner-height);
 }
 
 body {
@@ -61,8 +60,8 @@ a:hover {
 
 #wrapper {
     padding-top: var(--reader-header-height);
-    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
-    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
+    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) );
+    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) );
     display: flex;
     width: 100%;
     margin: 0;
@@ -74,8 +73,8 @@ a:hover {
 
 main#listing {
     width: 100%;
-    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
-    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) - 8px);
+    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) );
+    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) );
     padding-top: var(--reader-header-height);
     overflow-y: auto;
 }
