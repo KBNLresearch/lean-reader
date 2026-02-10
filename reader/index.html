@@ -54,9 +54,15 @@
           <button id="line-height-percentage" title="Witruimte tussen regels terugzetten" >100%</button>
         </label>
         <label>
+          <input id="paragraph-spacing" type="radio" name="pick-setting" value="paragraph-spacing" class="radio-toggle"/>
+          <img src="icons/paragraph_spacing.svg" alt="Witruimte tussen paragrafen instellen" title="Witruimte tussen paragrafen instellen" />
+          <input type="range" min="1" max="300" value="100" id="change-paragraph-spacing" title="Witruimte tussen paragrafen: 100%" />
+          <button id="paragraph-spacing-percentage" title="Witruimte tussen paragrafen terugzetten" >100%</button>
+        </label>
+        <label>
           <input id="word-spacing" type="radio" name="pick-setting" value="word-spacing" class="radio-toggle"/>
           <img src="icons/word_spacing.svg" alt="Witruimte tussen woorden instellen" title="Witruimte tussen woorden instellen" />
-          <input type="range" min="0" max="100" value="0" id="change-word-spacing" title="Witruimte tussen woorden: 100%" />
+          <input type="range" min="0" max="100" value="0" id="change-word-spacing" title="Witruimte tussen woorden: 0%" />
           <button id="word-spacing-percentage" title="Witruimte tussen woorden terugzetten" >0%</button>
         </label>
       </div>

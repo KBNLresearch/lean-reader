@@ -166,7 +166,11 @@ footer.header-footer > div {
     position: relative;
 }
 
-@media (max-width: 800px) {
+.header-footer input[type='range'] {
+    width: 75px;
+}
+
+@media (max-width: 1024px) {
     .header-footer input[type='radio'].radio-toggle + img {
         cursor: pointer;
         border: 2px solid transparent;

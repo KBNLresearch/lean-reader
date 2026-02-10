@@ -144,6 +144,12 @@ function initializePreferenceButtons(nav : EpubNavigator) {
     nav, "Witruimte tussen woorden", "wordSpacing", 0
   );
 
+  initializePreferenceSettingSlider(
+    document.getElementById("change-paragraph-spacing") as HTMLInputElement,
+    document.getElementById("paragraph-spacing-percentage") as HTMLElement,
+    nav, "Witruimte tussen paragrafen", "paragraphSpacing"
+  );
+
   document.querySelectorAll("input[name='contrast-mode']").forEach((input) => {
     (input as HTMLInputElement).addEventListener("change", (ev) => {
       const targetStyle = (ev.target as HTMLElement).parentElement!.style;
