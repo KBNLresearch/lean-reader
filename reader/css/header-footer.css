@@ -28,7 +28,7 @@ footer.header-footer {
 
 footer.header-footer > div {
     margin-top: 1em;
-    height: 24px;
+    height: 26px;
     width: 100%;
 }
 
@@ -110,10 +110,13 @@ footer.header-footer > div {
     margin-left: 0.25em;
 }
 
-.header-footer label {
+.header-footer label.contrast-mode-toggle {
     cursor: pointer;
+    margin-left: 0.25em;
+    padding: 0.1em 0.5em 0.1em 0.1em;
+    border: 1px solid;
+    border-radius: 1em;
 }
-
 
 .header-footer input[type='radio'].radio-toggle {
     position: absolute;
