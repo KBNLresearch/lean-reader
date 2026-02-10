@@ -110,6 +110,10 @@ footer.header-footer > div {
     margin-left: 0.25em;
 }
 
+.header-footer label {
+    cursor: pointer;
+}
+
 
 .header-footer input[type='radio'].radio-toggle {
     position: absolute;

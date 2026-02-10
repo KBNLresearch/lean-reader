@@ -16,6 +16,8 @@ import { createPoorMansConsole } from "./util/poorMansConsole";
 import { store } from './core/store';
 import { setDocumentTextNodes, setHighlights, setLastKnownWordPosition, setPublicationIsLoading, setSelection } from './core/readaloudNavigationSlice';
 
+type ContrastMode = "standard"|"contrast-mode-1"|"contrast-mode-2"|"contrast-mode-3"
+
 const { isAndroid } = detectPlatformFeatures()
 const pmc = createPoorMansConsole(document.getElementById("debug")!);
 const container = document.getElementById("container")!;
@@ -143,6 +145,39 @@ function initializePreferenceButtons(nav : EpubNavigator) {
     document.getElementById("word-spacing-percentage") as HTMLElement,
     nav, "Witruimte tussen woorden", "wordSpacing", 0
   );
+
+  document.querySelectorAll("input[name='contrast-mode']").forEach((input) => {
+    (input as HTMLInputElement).addEventListener("change", (ev) => {
+      const val = (ev.target as HTMLInputElement).value as ContrastMode
+      const prefEdit = nav.preferencesEditor;
+      switch (val) {
+        case "contrast-mode-1":
+          prefEdit.backgroundColor.value = "black";
+          prefEdit.textColor.value = "rgb(255, 255, 0)";
+          prefEdit.fontWeight.value = 700;
+          nav.submitPreferences(prefEdit.preferences);
+          break;
+        case "contrast-mode-2":
+          prefEdit.backgroundColor.value = "rgb(24, 24, 66)";
+          prefEdit.textColor.value = "rgb(255, 255, 255)";
+          prefEdit.fontWeight.value = 500;
+          nav.submitPreferences(prefEdit.preferences);
+          break;
+        case "contrast-mode-3":
+          prefEdit.backgroundColor.value = "rgb(197, 231, 205)";
+          prefEdit.textColor.value = "rgb(0, 0, 0)";
+          prefEdit.fontWeight.value = 200;
+          nav.submitPreferences(prefEdit.preferences);
+          break;
+        case "standard":
+        default:
+          prefEdit.backgroundColor.value = null;
+          prefEdit.textColor.value = null;
+          prefEdit.fontWeight.value = 200;
+          nav.submitPreferences(prefEdit.preferences);
+      }
+    })
+  })
 }
 
 
