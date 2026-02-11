@@ -168,9 +168,27 @@ function initializePreferenceButtons(nav : EpubNavigator) {
       const targetStyle = (ev.target as HTMLElement).parentElement!.style;
       const prefEdit = nav.preferencesEditor;
       prefEdit.backgroundColor.value = targetStyle.backgroundColor;
-      prefEdit.textColor.value = (ev.target as HTMLElement).parentElement!.style.color;
-      prefEdit.fontWeight.value = parseInt((ev.target as HTMLElement).parentElement!.style.fontWeight);
+      prefEdit.textColor.value = targetStyle.color;
+      prefEdit.fontWeight.value = parseInt(targetStyle.fontWeight);
+      document.getElementById("wrapper")!.style.backgroundColor = targetStyle.backgroundColor;
       nav.submitPreferences(prefEdit.preferences);
+      document.querySelectorAll("input[name='font-style']").forEach((fontStyleInput) => {
+        fontStyleInput.parentElement!.style.backgroundColor = targetStyle.backgroundColor;
+        fontStyleInput.parentElement!.style.color = targetStyle.color;
+        fontStyleInput.parentElement!.style.fontWeight = targetStyle.fontWeight;
+      })
+    })
+  })
+
+  document.querySelectorAll("input[name='font-style']").forEach((input) => {
+    (input as HTMLInputElement).addEventListener("change", (ev) => {
+      const targetStyle = (ev.target as HTMLElement).parentElement!.style;
+      const prefEdit = nav.preferencesEditor;
+      prefEdit.fontFamily.value = targetStyle.fontFamily; 
+      nav.submitPreferences(prefEdit.preferences);
+      document.querySelectorAll("input[name='contrast-mode']").forEach((fontStyleInput) => {
+        fontStyleInput.parentElement!.style.fontFamily = targetStyle.fontFamily;
+      })
     })
   })
 }

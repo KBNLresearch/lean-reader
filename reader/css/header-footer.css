@@ -204,9 +204,8 @@ h1.hack-over-flex {
 
 @media (max-width: 960px) {
     header.header-footer .centered {
-        display: inline-block;
-        width: 100%;
         text-align: right;
+        justify-content: right;
     }
 }
 
@@ -216,7 +215,8 @@ h1.hack-over-flex {
         display: none;
     }
     header.header-footer .centered {
-        display: flex;
         text-align: center;
+        justify-content: center;
+
     }
 }
