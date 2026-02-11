@@ -81,25 +81,40 @@
         </label>
       </div>
       <div class="centered">
-        <label style="background-color: white;" class="contrast-mode-toggle">
+        <label style="background-color: white;" class="style-mode-toggle">
           <input type="radio" name="contrast-mode" value="standard" checked />
           Standaard
         </label>
-        <label style="background-color: black; color: rgb(255, 255, 0); font-weight: 700;" class="contrast-mode-toggle">
+        <label style="background-color: black; color: rgb(255, 255, 0); font-weight: 700;" class="style-mode-toggle">
           <input type="radio" name="contrast-mode" value="contrast-mode-1"  />
           Contrast 1
         </label>
-        <label style="background-color: rgb(24, 24, 66); color: rgb(255, 255, 255); font-weight: 500;" class="contrast-mode-toggle">
+        <label style="background-color: rgb(24, 24, 66); color: rgb(255, 255, 255); font-weight: 500;" class="style-mode-toggle">
           <input type="radio" name="contrast-mode" value="contrast-mode-2"  />
           Contrast 2
         </label>
-        <label style="background-color: rgb(197, 231, 205); color: rgb(0, 0, 0); font-weight: 200;" class="contrast-mode-toggle">
+        <label style="background-color: rgb(197, 231, 205); color: rgb(0, 0, 0); font-weight: 200;" class="style-mode-toggle">
           <input type="radio" name="contrast-mode" value="contrast-mode-3"  />
           Contrast 3
         </label>
       </div>
       <div class="centered">
-        [TODO: lettertypekeuze]
+        <label style="background-color: white;" class="style-mode-toggle">
+          <input type="radio" name="font-style" value="auto" checked />
+          Standaard
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: &quot;Iowan Old Style&quot;, Sitka, &quot;Sitka Text&quot;, Palatino, &quot;Book Antiqua&quot;, &quot;URW Palladio L&quot;, P052, serif;">
+          <input type="radio" name="font-style" value="serif" >
+          Serif
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: -ui-sans-serif, -apple-system, system-ui, BlinkMacSystemFont, &quot;Segoe UI Variable&quot;, &quot;Segoe UI&quot;, Inter, Roboto, &quot;Helvetica Neue&quot;, &quot;Arial Nova&quot;, &quot;Liberation Sans&quot;, Arial, sans-serif">
+          <input type="radio" name="font-style" value="serif" >
+          Sans-Serif
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: ui-monospace, &quot;Andale Mono&quot;, &quot;Cascadia Code&quot;, &quot;Source Code Pro&quot;, Menlo, Consolas, &quot;DejaVu Sans Mono&quot;, monospace">
+          <input type="radio" name="font-style" value="monospace" >
+          Monospace
+        </label>
       </div>
     </footer>
     <pre id="debug">

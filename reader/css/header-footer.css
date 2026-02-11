@@ -110,10 +110,10 @@ footer.header-footer > div {
     margin-left: 0.25em;
 }
 
-.header-footer label.contrast-mode-toggle {
+.header-footer label.style-mode-toggle {
     cursor: pointer;
     margin-left: 0.25em;
-    padding: 0.1em 0.5em 0.1em 0.1em;
+    padding: 0.1em 1em 0.1em 0.1em;
     border: 1px solid;
     border-radius: 1em;
 }
@@ -204,9 +204,8 @@ h1.hack-over-flex {
 
 @media (max-width: 960px) {
     header.header-footer .centered {
-        display: inline-block;
-        width: 100%;
         text-align: right;
+        justify-content: right;
     }
 }
 
@@ -216,7 +215,8 @@ h1.hack-over-flex {
         display: none;
     }
     header.header-footer .centered {
-        display: flex;
         text-align: center;
+        justify-content: center;
+
     }
 }
