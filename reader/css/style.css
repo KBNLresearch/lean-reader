@@ -24,7 +24,7 @@
     --kb-link-inactive: #7A847F;
     --kb-link-black: #333333;
     --reader-header-inner-height: 24px;
-    --reader-footer-inner-height: 128px;
+    --reader-footer-inner-height: calc(128px + 0.5em);
     --reader-header-padding: 1em;
     --reader-header-height: calc(var(--reader-header-padding) * 2 + var(--reader-header-inner-height));
     --reader-footer-height: var(--reader-footer-inner-height);

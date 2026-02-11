@@ -110,10 +110,10 @@ footer.header-footer > div {
     margin-left: 0.25em;
 }
 
-.header-footer label.contrast-mode-toggle {
+.header-footer label.style-mode-toggle {
     cursor: pointer;
     margin-left: 0.25em;
-    padding: 0.1em 0.5em 0.1em 0.1em;
+    padding: 0.1em 1em 0.1em 0.1em;
     border: 1px solid;
     border-radius: 1em;
 }
