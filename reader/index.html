@@ -20,7 +20,7 @@
         <button id="play-readaloud" title="Afspelen met voorleesstem" type="button" style="display: none;" class="readaloud-control">
           <img src="icons/play.svg" alt="Afspelen met voorleesstem" />
         </button>
-        <input type="range" id="rate-slider" min="10" max="200" step="10" value="100" title="100%">
+        <input type="range" id="rate-slider" min="10" max="200" step="1" value="100" title="100%">
         <button id="rate-percentage" style="display: none;" class="readaloud-control">100%</button>
         <span id="no-voices-found">Geen voorleesstem gevonden!</span>
       </span>
@@ -41,7 +41,7 @@
           <input type="range" min="100" max="200" value="100" id="change-line-height" title="Witruimte tussen regels: 100%" />
           <button id="line-height-percentage" title="Witruimte tussen regels terugzetten" >100%</button>
         </label>
-        <h2>Ruimte tussen woorden</h2>
+        <h2>Woordafstand</h2>
         <label>
           <input id="word-spacing" type="radio" name="pick-setting" value="word-spacing" class="radio-toggle"/>
           <img src="icons/word_spacing.svg" alt="Witruimte tussen woorden instellen" title="Witruimte tussen woorden instellen" />
@@ -105,7 +105,7 @@
       </section>
     </div>
     <div id="wrapper">
-      <button title="Vorige pagina" id="previous-page" style="visibility: hidden">
+      <button title="Vorige pagina" id="previous-page" disabled>
         <img src="icons/arrow_back.svg" />
       </button>
       <main id="container" aria-label="Publicatie">
@@ -113,7 +113,7 @@
           Bezig met laden...
         </div>
       </main>
-      <button title="Volgende pagina" id="next-page" style="visibility: hidden">
+      <button title="Volgende pagina" id="next-page" disabled>
         <img src="icons/arrow_forward.svg" />
       </button>
     </div>

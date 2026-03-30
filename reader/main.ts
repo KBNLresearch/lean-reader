@@ -490,25 +490,25 @@ async function init(bookId: string) {
         
           if (nav.preferencesEditor.scroll.effectiveValue) {
             if (nav.canGoForward && nav.isScrollEnd) {
-              document.getElementById("next-page")!.style.visibility = "visible";
+              (document.getElementById("next-page")! as HTMLButtonElement).disabled = false;
             } else {
-              document.getElementById("next-page")!.style.visibility = "hidden";
+              (document.getElementById("next-page")! as HTMLButtonElement).disabled = true;
             }
             if (nav.canGoBackward && nav.isScrollStart) {
-              document.getElementById("previous-page")!.style.visibility = "visible";
+              (document.getElementById("previous-page")! as HTMLButtonElement).disabled = false;
             } else {
-              document.getElementById("previous-page")!.style.visibility = "hidden";
+              (document.getElementById("previous-page")! as HTMLButtonElement).disabled = true;
             }
           } else {
             if (nav.canGoForward) {
-              document.getElementById("next-page")!.style.visibility = "visible";
+              (document.getElementById("next-page")! as HTMLButtonElement).disabled = false;
             } else {
-              document.getElementById("next-page")!.style.visibility = "hidden";
+              (document.getElementById("next-page")! as HTMLButtonElement).disabled = true;
             }
             if (nav.canGoBackward) {
-              document.getElementById("previous-page")!.style.visibility = "visible";
+              (document.getElementById("previous-page")! as HTMLButtonElement).disabled = false;
             } else {
-              document.getElementById("previous-page")!.style.visibility = "hidden";
+              (document.getElementById("previous-page")! as HTMLButtonElement).disabled = true;
             }
           }
         },
