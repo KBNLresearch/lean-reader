@@ -27,7 +27,81 @@
     </header>
     <div id="left-panel">
       <section>
-        <h2>Instellingen</h2>
+        <h2>Lettergrootte</h2>
+        <label>
+          <input id="letter-size" type="radio" name="pick-setting" value="letter-size" class="radio-toggle" />
+          <img src="icons/font_size.svg" alt="Lettergrootte instellen" title="Lettergrootte instellen" />
+          <input type="range" min="70" max="400" value="100" step="10" id="change-letter-size" title="Lettergrootte: 100%" />
+          <button id="letter-size-percentage" title="Lettergrootte terugzetten" >100%</button>
+        </label>
+        <h2>Regelafstand</h2>
+        <label>
+          <input id="line-height" type="radio" name="pick-setting" value="line-height" class="radio-toggle" />
+          <img src="icons/density_small.svg" alt="Witruimte tussen regels instellen" title="Witruimte tussen regels instellen" />
+          <input type="range" min="100" max="200" value="100" id="change-line-height" title="Witruimte tussen regels: 100%" />
+          <button id="line-height-percentage" title="Witruimte tussen regels terugzetten" >100%</button>
+        </label>
+        <h2>Ruimte tussen woorden</h2>
+        <label>
+          <input id="word-spacing" type="radio" name="pick-setting" value="word-spacing" class="radio-toggle"/>
+          <img src="icons/word_spacing.svg" alt="Witruimte tussen woorden instellen" title="Witruimte tussen woorden instellen" />
+          <input type="range" min="0" max="100" value="0" id="change-word-spacing" title="Witruimte tussen woorden: 0%" />
+          <button id="word-spacing-percentage" title="Witruimte tussen woorden terugzetten" >0%</button>
+        </label>
+        <h2>Paragraaf</h2>
+        <label>
+          <input id="paragraph-spacing" type="radio" name="pick-setting" value="paragraph-spacing" class="radio-toggle"/>
+          <img src="icons/paragraph_spacing.svg" alt="Witruimte tussen paragrafen instellen" title="Witruimte tussen paragrafen instellen" />
+          <input type="range" min="1" max="300" value="100" id="change-paragraph-spacing" title="Witruimte tussen paragrafen: 100%" />
+          <button id="paragraph-spacing-percentage" title="Witruimte tussen paragrafen terugzetten" >100%</button>
+        </label>
+
+        <label style="display: none;">
+          <input id="letter-spacing" type="radio" name="pick-setting" value="letter-spacing" class="radio-toggle"/>
+          <img src="icons/letter_spacing.svg" alt="Witruimte tussen letters instellen" title="Witruimte tussen letters instellen" />
+          <input type="range" min="0" max="100" value="0" id="change-letter-spacing" title="Witruimte tussen letters: 0%" />
+          <button id="letter-spacing-percentage" title="Witruimte tussen letters terugzetten" >0%</button>
+        </label>
+        <label style="display: none;">
+          <input id="paragraph-indent" type="radio" name="pick-setting" value="paragraph-indent" class="radio-toggle"/>
+          <img src="icons/paragraph_indent.svg" alt="Paragraafstartwitruimte instellen" title="Paragraafstartwitruimte instellen" />
+          <input type="range" min="0" max="100" value="0" id="change-paragraph-indent" title="Paragraafstartwitruimte: 0%" />
+          <button id="paragraph-indent-percentage" title="Paragraafstartwitruimte terugzetten" >0%</button>
+        </label>
+        <h2>Contrast</h2>
+        <label style="background-color: white;" class="style-mode-toggle">
+          <input type="radio" name="contrast-mode" value="standard" checked />
+          Standaard
+        </label>
+        <label style="background-color: black; color: rgb(255, 255, 0); font-weight: 700;" class="style-mode-toggle">
+          <input type="radio" name="contrast-mode" value="contrast-mode-1"  />
+          Contrast 1
+        </label>
+        <label style="background-color: rgb(24, 24, 66); color: rgb(255, 255, 255); font-weight: 500;" class="style-mode-toggle">
+          <input type="radio" name="contrast-mode" value="contrast-mode-2"  />
+          Contrast 2
+        </label>
+        <label style="background-color: rgb(197, 231, 205); color: rgb(0, 0, 0); font-weight: 200;" class="style-mode-toggle">
+          <input type="radio" name="contrast-mode" value="contrast-mode-3"  />
+          Contrast 3
+        </label>
+        <h2>Lettertype</h2>
+        <label style="background-color: white;" class="style-mode-toggle">
+          <input type="radio" name="font-style" value="auto" checked />
+          Standaard
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: &quot;Iowan Old Style&quot;, Sitka, &quot;Sitka Text&quot;, Palatino, &quot;Book Antiqua&quot;, &quot;URW Palladio L&quot;, P052, serif;">
+          <input type="radio" name="font-style" value="serif" >
+          Serif
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: -ui-sans-serif, -apple-system, system-ui, BlinkMacSystemFont, &quot;Segoe UI Variable&quot;, &quot;Segoe UI&quot;, Inter, Roboto, &quot;Helvetica Neue&quot;, &quot;Arial Nova&quot;, &quot;Liberation Sans&quot;, Arial, sans-serif">
+          <input type="radio" name="font-style" value="serif" >
+          Sans-Serif
+        </label>
+        <label class="style-mode-toggle" style="background-color: white; font-family: ui-monospace, &quot;Andale Mono&quot;, &quot;Cascadia Code&quot;, &quot;Source Code Pro&quot;, Menlo, Consolas, &quot;DejaVu Sans Mono&quot;, monospace">
+          <input type="radio" name="font-style" value="monospace" >
+          Monospace
+        </label>
       </section>
     </div>
     <div id="wrapper">
@@ -52,80 +126,6 @@
       <button title="open debug" id="open-debug" type="button" style="display: none;">
         {}
       </button>
-      <div class="centered">
-        <label>
-          <input id="letter-size" type="radio" name="pick-setting" value="letter-size" class="radio-toggle" />
-          <img src="icons/font_size.svg" alt="Lettergrootte instellen" title="Lettergrootte instellen" />
-          <input type="range" min="70" max="400" value="100" step="10" id="change-letter-size" title="Lettergrootte: 100%" />
-          <button id="letter-size-percentage" title="Lettergrootte terugzetten" >100%</button>
-        </label>
-        <label>
-          <input id="line-height" type="radio" name="pick-setting" value="line-height" class="radio-toggle" />
-          <img src="icons/density_small.svg" alt="Witruimte tussen regels instellen" title="Witruimte tussen regels instellen" />
-          <input type="range" min="100" max="200" value="100" id="change-line-height" title="Witruimte tussen regels: 100%" />
-          <button id="line-height-percentage" title="Witruimte tussen regels terugzetten" >100%</button>
-        </label>
-        <label>
-          <input id="paragraph-spacing" type="radio" name="pick-setting" value="paragraph-spacing" class="radio-toggle"/>
-          <img src="icons/paragraph_spacing.svg" alt="Witruimte tussen paragrafen instellen" title="Witruimte tussen paragrafen instellen" />
-          <input type="range" min="1" max="300" value="100" id="change-paragraph-spacing" title="Witruimte tussen paragrafen: 100%" />
-          <button id="paragraph-spacing-percentage" title="Witruimte tussen paragrafen terugzetten" >100%</button>
-        </label>
-        <label>
-          <input id="word-spacing" type="radio" name="pick-setting" value="word-spacing" class="radio-toggle"/>
-          <img src="icons/word_spacing.svg" alt="Witruimte tussen woorden instellen" title="Witruimte tussen woorden instellen" />
-          <input type="range" min="0" max="100" value="0" id="change-word-spacing" title="Witruimte tussen woorden: 0%" />
-          <button id="word-spacing-percentage" title="Witruimte tussen woorden terugzetten" >0%</button>
-        </label>
-        <label>
-          <input id="letter-spacing" type="radio" name="pick-setting" value="letter-spacing" class="radio-toggle"/>
-          <img src="icons/letter_spacing.svg" alt="Witruimte tussen letters instellen" title="Witruimte tussen letters instellen" />
-          <input type="range" min="0" max="100" value="0" id="change-letter-spacing" title="Witruimte tussen letters: 0%" />
-          <button id="letter-spacing-percentage" title="Witruimte tussen letters terugzetten" >0%</button>
-        </label>
-        <label>
-          <input id="paragraph-indent" type="radio" name="pick-setting" value="paragraph-indent" class="radio-toggle"/>
-          <img src="icons/paragraph_indent.svg" alt="Paragraafstartwitruimte instellen" title="Paragraafstartwitruimte instellen" />
-          <input type="range" min="0" max="100" value="0" id="change-paragraph-indent" title="Paragraafstartwitruimte: 0%" />
-          <button id="paragraph-indent-percentage" title="Paragraafstartwitruimte terugzetten" >0%</button>
-        </label>
-      </div>
-      <div class="centered">
-        <label style="background-color: white;" class="style-mode-toggle">
-          <input type="radio" name="contrast-mode" value="standard" checked />
-          Standaard
-        </label>
-        <label style="background-color: black; color: rgb(255, 255, 0); font-weight: 700;" class="style-mode-toggle">
-          <input type="radio" name="contrast-mode" value="contrast-mode-1"  />
-          Contrast 1
-        </label>
-        <label style="background-color: rgb(24, 24, 66); color: rgb(255, 255, 255); font-weight: 500;" class="style-mode-toggle">
-          <input type="radio" name="contrast-mode" value="contrast-mode-2"  />
-          Contrast 2
-        </label>
-        <label style="background-color: rgb(197, 231, 205); color: rgb(0, 0, 0); font-weight: 200;" class="style-mode-toggle">
-          <input type="radio" name="contrast-mode" value="contrast-mode-3"  />
-          Contrast 3
-        </label>
-      </div>
-      <div class="centered">
-        <label style="background-color: white;" class="style-mode-toggle">
-          <input type="radio" name="font-style" value="auto" checked />
-          Standaard
-        </label>
-        <label class="style-mode-toggle" style="background-color: white; font-family: &quot;Iowan Old Style&quot;, Sitka, &quot;Sitka Text&quot;, Palatino, &quot;Book Antiqua&quot;, &quot;URW Palladio L&quot;, P052, serif;">
-          <input type="radio" name="font-style" value="serif" >
-          Serif
-        </label>
-        <label class="style-mode-toggle" style="background-color: white; font-family: -ui-sans-serif, -apple-system, system-ui, BlinkMacSystemFont, &quot;Segoe UI Variable&quot;, &quot;Segoe UI&quot;, Inter, Roboto, &quot;Helvetica Neue&quot;, &quot;Arial Nova&quot;, &quot;Liberation Sans&quot;, Arial, sans-serif">
-          <input type="radio" name="font-style" value="serif" >
-          Sans-Serif
-        </label>
-        <label class="style-mode-toggle" style="background-color: white; font-family: ui-monospace, &quot;Andale Mono&quot;, &quot;Cascadia Code&quot;, &quot;Source Code Pro&quot;, Menlo, Consolas, &quot;DejaVu Sans Mono&quot;, monospace">
-          <input type="radio" name="font-style" value="monospace" >
-          Monospace
-        </label>
-      </div>
     </footer>
     <pre id="debug">
     </pre>

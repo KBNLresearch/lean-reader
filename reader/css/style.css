@@ -1,5 +1,6 @@
 @import url("reset.css");
 @import url("header-footer.css");
+@import url(left-panel.css);
 
 @font-face {
     font-family: AGaramondPro;
@@ -25,10 +26,10 @@
     --kb-link-black: #333333;
     --universal-padding: 16px;
     --reader-header-inner-height: 24px;
-    --reader-footer-inner-height: calc(128px + 0.5em);
+    --reader-footer-inner-height: 24px;
     --reader-header-padding: var(--universal-padding);
     --reader-header-height: calc(var(--reader-header-padding) * 2 + var(--reader-header-inner-height));
-    --reader-footer-height: var(--reader-footer-inner-height);
+    --reader-footer-height: calc(var(--reader-header-padding) * 2 + var(--reader-footer-inner-height));
 }
 
 body {
@@ -50,6 +51,14 @@ h4 {
     font-style: normal;
 }
 
+h2 {
+    margin-top: var(--universal-padding);
+    margin-bottom: calc(var(--universal-padding)*0.5);
+}
+
+h2:first-of-type {
+    margin-top: 0;
+}
 
 a {
     color: var(--kb-link-black);
@@ -87,6 +96,7 @@ a:hover {
 
 #wrapper button  {
     height: 100%;
+    z-index: 1;
 }
 
 main#listing {

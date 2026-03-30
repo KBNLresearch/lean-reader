@@ -22,6 +22,7 @@ footer.header-footer {
     width: 100%;
     padding: 0;
     bottom: 0;
+    padding: var(--reader-header-padding);
     height: var(--reader-footer-inner-height);
     overflow: hidden;
 }
@@ -110,96 +111,15 @@ footer.header-footer > div {
     margin-left: 0.25em;
 }
 
-.header-footer label.style-mode-toggle {
-    cursor: pointer;
-    margin-left: 0.25em;
-    padding: 0.1em 1em 0.1em 0.1em;
-    border: 1px solid;
-    border-radius: 1em;
-}
-
-.header-footer input[type='radio'].radio-toggle {
+h1.hack-over-flex {
     position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.header-footer input[type='radio'].radio-toggle:checked + img {
-    cursor: default;
-}
-
-
-
-.header-footer input[type='radio'].radio-toggle ~ input[type='range'] {
-    top: -4px;
-}
-
-.header-footer input[type='radio'].radio-toggle ~ button {
-    top: -10px;
-    margin-right: 1em;
-}
-
-
-.header-footer input[type='radio'].radio-toggle:checked ~ input[type='range'],
-.header-footer input[type='radio'].radio-toggle:checked ~ button {
-    display: inline-block;
+    padding-left: 2em;
 }
 
 
 #no-voices-found {
     font-size: 0.8em;
     display: none;
-}
-
-.header-footer input[type='radio'].radio-toggle + img {
-    cursor: default;
-    border: 2px solid transparent;
-}
-
-.header-footer input[type='radio'].radio-toggle:checked + img {
-    cursor: default;
-}
-
-.header-footer input[type='radio'].radio-toggle ~ input[type='range'],
-.header-footer input[type='radio'].radio-toggle ~ button {
-    position: relative;
-}
-
-.header-footer .radio-toggle ~ input[type='range'] {
-    width: 120px;
-}
-
-h1.hack-over-flex {
-    position: absolute;
-    padding-left: 2em;
-}
-
-@media (max-width: 1280px) {
-    .header-footer .radio-toggle ~ input[type='range'] {
-        width: 75px;
-    }
-}
-
-@media (max-width: 1024px) {
-    .header-footer input[type='radio'].radio-toggle + img {
-        cursor: pointer;
-        border: 2px solid transparent;
-    }
-
-    .header-footer input[type='radio'].radio-toggle:checked + img {
-        cursor: default;
-        border: 2px solid black;
-    }
-
-    .header-footer input[type='radio'].radio-toggle ~ input[type='range'],
-    .header-footer input[type='radio'].radio-toggle ~ button {
-        display: none;
-    }
-
-    .header-footer .radio-toggle ~ input[type='range'] {
-        width: 240px;
-    }
 }
 
 @media (max-width: 960px) {
