@@ -16,7 +16,7 @@ import { createPoorMansConsole } from "./util/poorMansConsole";
 import { store } from './core/store';
 import { setDocumentTextNodes, setHighlights, setLastKnownWordPosition, setPublicationIsLoading, setSelection } from './core/readaloudNavigationSlice';
 import collapseIcon from "./icons/chevron_right.svg";
-import type { CollectedWord, WordDetail } from './core/wordDetailsSlice';
+import { toggleWordCollapse, type CollectedWord, type WordDetail } from './core/wordDetailsSlice';
 
 const { isAndroid } = detectPlatformFeatures()
 const pmc = createPoorMansConsole(document.getElementById("debug")!);
@@ -27,6 +27,7 @@ function createWordDetailItem(cw : CollectedWord, wordDetail : WordDetail): HTML
     const h3 = document.createElement("h3");
     const h3TextSpan = document.createElement("span");
     const h3CollapseExpandToggle = document.createElement("img")
+    h3.addEventListener("click", () => store.dispatch(toggleWordCollapse(cw.word)));
     newLi.appendChild(h3)
     h3.style.cursor = "pointer";
     h3.style.display = "flex";
@@ -45,6 +46,8 @@ function createWordDetailItem(cw : CollectedWord, wordDetail : WordDetail): HTML
       img.src = wordDetail.imageSrc;
       img.style.maxWidth = "100%";
       translationDiv.innerHTML = wordDetail.translation;
+      translationDiv.style.marginBottom = "8px";
+      translationDiv.style.marginTop = "8px";
       expandDiv.appendChild(translationDiv);
       expandDiv.appendChild(img);
       newLi.appendChild(expandDiv);

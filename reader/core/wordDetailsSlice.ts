@@ -63,7 +63,7 @@ const initialState : WordtDetailsState = {
     },
     collectedWords: [
         {word: "sterk", collapsed: false},
-        {word: "lachen", collapsed: true}
+        {word: "lachen", collapsed: false}
     ]
 }
 
@@ -71,10 +71,16 @@ export const wordtDetailsSlice = createSlice({
     name: "wordtDetails",
     initialState,
     reducers: {
-
+        toggleWordCollapse(state, { payload }) {
+            state.collectedWords = state.collectedWords.map((cw) => ({
+                ...cw,
+                collapsed: payload === cw.word ? !cw.collapsed : cw.collapsed
+            }))
+        }
     }
 });
 
 export const {
+    toggleWordCollapse
 } = wordtDetailsSlice.actions;
 export default wordtDetailsSlice.reducer;
