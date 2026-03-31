@@ -4,6 +4,4 @@
   z-index: 1000;
   pointer-events: none;
   color: transparent;
-  padding-top: var(--universal-padding);
-  margin-left: var(--universal-padding);
 }
