@@ -21,13 +21,18 @@ import wind from "../assets/img/wind.jpg";
 import zon from "../assets/img/zon.jpg";
 
 
-type WordDetail = {
+export type WordDetail = {
     translation:  string,
     imageSrc: string
 }
 
+export type CollectedWord = {
+    collapsed : boolean
+    word : string
+}
+
 type WordtDetailsState = {
-    collectedWords : string[]
+    collectedWords : CollectedWord[]
     dictionary : {[key : string]: WordDetail}
 }
 
@@ -57,7 +62,8 @@ const initialState : WordtDetailsState = {
         "voeten": { translation: "feet", imageSrc: voeten }
     },
     collectedWords: [
-        "sterk", "lachen"
+        {word: "sterk", collapsed: false},
+        {word: "lachen", collapsed: true}
     ]
 }
 
