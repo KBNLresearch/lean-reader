@@ -27,13 +27,27 @@ function createWordDetailItem(cw : CollectedWord, wordDetail : WordDetail): HTML
     const h3 = document.createElement("h3");
     const h3TextSpan = document.createElement("span");
     const h3CollapseExpandToggle = document.createElement("img")
-    h3.style.display = "flex"
-    h3TextSpan.style.paddingTop = "8px"
-    h3CollapseExpandToggle.src = collapseIcon
+    newLi.appendChild(h3)
+    h3.style.cursor = "pointer";
+    h3.style.display = "flex";
+    h3TextSpan.style.paddingTop = "8px";
+    h3CollapseExpandToggle.src = collapseIcon;
     h3CollapseExpandToggle.style.height = "28px";
     if (!cw.collapsed) {
       h3CollapseExpandToggle.style.height = "32px";
       h3CollapseExpandToggle.style.transform = "rotate(90deg)";
+      const expandDiv = document.createElement("div");
+      const img = document.createElement("img");
+      const translationDiv = document.createElement("div");
+      expandDiv.style.borderRadius = "8px";
+      expandDiv.style.padding = "8px";
+      expandDiv.style.backgroundColor = "white";
+      img.src = wordDetail.imageSrc;
+      img.style.maxWidth = "100%";
+      translationDiv.innerHTML = wordDetail.translation;
+      expandDiv.appendChild(translationDiv);
+      expandDiv.appendChild(img);
+      newLi.appendChild(expandDiv);
     } else {
       h3CollapseExpandToggle.style.marginLeft = "2px"
       h3TextSpan.style.paddingLeft = "2px"
@@ -41,7 +55,6 @@ function createWordDetailItem(cw : CollectedWord, wordDetail : WordDetail): HTML
     h3TextSpan.innerHTML = cw.word
     h3.appendChild(h3CollapseExpandToggle)
     h3.appendChild(h3TextSpan)
-    newLi.appendChild(h3)
     return newLi
 }
 
@@ -66,7 +79,7 @@ function renderHtmlElements() {
    const wordDetailUL = document.getElementById("word-details") as HTMLUListElement;
    wordDetailUL.innerHTML = "";
    collectedWords.forEach((cw) => {
-    wordDetailUL.appendChild(createWordDetailItem(cw, dictionary[cw]));
+    wordDetailUL.appendChild(createWordDetailItem(cw, dictionary[cw.word]));
    })
 }
 
