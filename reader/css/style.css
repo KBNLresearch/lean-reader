@@ -35,9 +35,20 @@
     --reader-footer-height: calc(var(--reader-header-padding) * 2 + var(--reader-footer-inner-height));
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1440px) {
     :root {
         --left-panel-width: 160px;
+    }
+}
+
+@media (max-width: 1280px) {
+    :root {
+        --right-panel-width: 380px;
+    }
+}
+
+@media (max-width: 1080px) {
+    :root {
         --right-panel-width: 320px;
     }
 }
