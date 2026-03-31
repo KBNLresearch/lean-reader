@@ -1,9 +1,12 @@
 import { configureStore  } from "@reduxjs/toolkit";
 import readaloudNavigationReducer from "./readaloudNavigationSlice";
+import wordDetailsReducer from "./wordDetailsSlice";
+
 
 export const store = configureStore({
     reducer: {
-        readaloudNavigation: readaloudNavigationReducer
+        readaloudNavigation: readaloudNavigationReducer,
+        wordDetails: wordDetailsReducer
     },
     middleware: (getDefaultMiddleWare) => getDefaultMiddleWare({serializableCheck: false})
 })

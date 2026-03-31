@@ -29,15 +29,27 @@
     --reader-footer-inner-height: 24px;
     --left-panel-width: 300px;
     --right-panel-width: 480px;
+    --big-nav-button-width: 38px;
     --side-panel-width: calc(var(--left-panel-width) + var(--right-panel-width));
     --reader-header-padding: var(--universal-padding);
     --reader-header-height: calc(var(--reader-header-padding) * 2 + var(--reader-header-inner-height));
     --reader-footer-height: calc(var(--reader-header-padding) * 2 + var(--reader-footer-inner-height));
 }
 
+@media (max-width: 1440px) {
+    :root {
+        --left-panel-width: 190px;
+    }
+}
+
 @media (max-width: 1280px) {
     :root {
-        --left-panel-width: 160px;
+        --right-panel-width: 380px;
+    }
+}
+
+@media (max-width: 1080px) {
+    :root {
         --right-panel-width: 320px;
     }
 }
@@ -85,9 +97,15 @@ a:hover {
     height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) );
     height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) );
     display: flex;
-    width: calc(100% - var(--side-panel-width));
     margin: 0;
     float: left;
+}
+
+#wrapper {
+    padding-top: calc(var(--reader-header-height) + var(--universal-padding));
+    height: calc(100vh - (var(--reader-footer-height) + var(--reader-header-height)) - var(--universal-padding));
+    height: calc(100dvh - (var(--reader-footer-height) + var(--reader-header-height)) - var(--universal-padding));
+    width: calc(100% - var(--side-panel-width));
 }
 
 #left-panel {
@@ -106,24 +124,27 @@ a:hover {
 }
 
 
-#wrapper button  {
+#left-panel > button,
+#right-panel > button  {
     height: 100%;
     z-index: 1;
     border: 1px solid var(--kb-gray);
-
 }
 
-#wrapper button:hover {
+#left-panel > button:hover,
+#right-panel > button:hover {
     border: 1px solid var(--kb-gray3);
     cursor: pointer;
 } 
 
-#wrapper button:disabled {
+#left-panel > button:disabled,
+#right-panel > button:disabled {
     border: 1px solid var(--kb-web-gray);
     cursor: default;
 } 
 
-#wrapper button:disabled > img {
+#left-panel > button:disabled > img,
+#right-panel > button:disabled > img {
     opacity: 0.2;
 }
 
@@ -146,11 +167,6 @@ ul#boek-entry-list li {
 
 #container {
     contain: content;
-    padding-top: var(--universal-padding);
-    padding-left: var(--universal-padding);
-    width: calc(100% - var(--universal-padding) * 2);
-    height: calc(100% - var(--universal-padding) * 2);
-    flex-grow: 1;
 }
 
 .readium-navigator-iframe {

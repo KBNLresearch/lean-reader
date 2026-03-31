@@ -68,7 +68,7 @@ input[type='radio'].radio-toggle ~ button {
     width: calc(100% - 84px);
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1440px) {
 
     label.style-mode-toggle {
         width: calc(100% - 16px);
