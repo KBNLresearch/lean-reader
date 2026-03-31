@@ -19,6 +19,7 @@ import voeten from "../assets/img/voeten.avif";
 import vogels from "../assets/img/vogels.webp";
 import wind from "../assets/img/wind.jpg";
 import zon from "../assets/img/zon.jpg";
+import { UNICODE_WORD_REGEX } from "./textNodeHelper";
 
 
 export type WordDetail = {
@@ -38,7 +39,7 @@ type WordtDetailsState = {
 
 const initialState : WordtDetailsState = {
     dictionary : {
-        "lachen": { translation: "laughing", imageSrc: lachen },
+        "lacht": { translation: "laughing", imageSrc: lachen },
         "doek": { translation: "blanket", imageSrc: doek },
         "moe": { translation: "tired", imageSrc: moe  },
         "nat": { translation: "wet", imageSrc: nat },
@@ -62,8 +63,6 @@ const initialState : WordtDetailsState = {
         "voeten": { translation: "feet", imageSrc: voeten }
     },
     collectedWords: [
-        {word: "sterk", collapsed: false},
-        {word: "lachen", collapsed: false}
     ]
 }
 
@@ -76,11 +75,26 @@ export const wordtDetailsSlice = createSlice({
                 ...cw,
                 collapsed: payload === cw.word ? !cw.collapsed : cw.collapsed
             }))
+        },
+        checkDictionary(state, {payload} : {payload : string}) {
+            const matches = payload.toLowerCase().matchAll(UNICODE_WORD_REGEX);
+            const words : string[] = [];
+            for (const m of matches) {
+                words.push(m[0]);
+                if (m[0] in state.dictionary && state.collectedWords.map(({word}) => word).indexOf(m[0]) < 0) {
+                    state.collectedWords.push({word: m[0], collapsed: false})
+                }
+            }
+            state.collectedWords = state.collectedWords.map((cw) => ({
+                ...cw,
+                collapsed: words.indexOf(cw.word) < 0
+            }))
         }
     }
 });
 
 export const {
-    toggleWordCollapse
+    toggleWordCollapse,
+    checkDictionary
 } = wordtDetailsSlice.actions;
 export default wordtDetailsSlice.reducer;

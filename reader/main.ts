@@ -16,7 +16,7 @@ import { createPoorMansConsole } from "./util/poorMansConsole";
 import { store } from './core/store';
 import { setDocumentTextNodes, setHighlights, setLastKnownWordPosition, setPublicationIsLoading, setSelection } from './core/readaloudNavigationSlice';
 import collapseIcon from "./icons/chevron_right.svg";
-import { toggleWordCollapse, type CollectedWord, type WordDetail } from './core/wordDetailsSlice';
+import { checkDictionary, toggleWordCollapse, type CollectedWord, type WordDetail } from './core/wordDetailsSlice';
 
 const { isAndroid } = detectPlatformFeatures()
 const pmc = createPoorMansConsole(document.getElementById("debug")!);
@@ -471,6 +471,7 @@ function handleIframeRelease(e : MouseEvent|TouchEvent) {
     store.dispatch(setSelection(undefined));
   } else {
     store.dispatch(setSelection(selectedText));
+    store.dispatch(checkDictionary(selectedText));
   }
 }
 
