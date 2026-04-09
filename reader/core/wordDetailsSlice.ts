@@ -1,24 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
-import blauw from "../assets/img/blauw.jpg";
-import bomen from "../assets/img/bomen.webp";
-import doek from "../assets/img/doek.avif";
-import huis from "../assets/img/huis.jpg";
-import kapot from "../assets/img/kapot.webp";
-import lachen from "../assets/img/lachen.webp"
-import langzaam from "../assets/img/langzaam.jpg";
-import lucht from "../assets/img/lucht.avif";
-import moe from "../assets/img/moe.jpg";
-import nat from "../assets/img/nat.jpg";
-import regent from "../assets/img/regent.jpg";
-import rondjeRijden from "../assets/img/rondje-rijden.jpg";
-import sterk from "../assets/img/sterk.jpg";
-import trappers from "../assets/img/trappers.jpg";
-import trots from "../assets/img/trots.jpg";
+import blauw from "../assets/img/blauw.png";
+import bomen from "../assets/img/bomen.png";
+import doek from "../assets/img/doek.png";
+import huis from "../assets/img/huis.png";
+import kapot from "../assets/img/kapot.png";
+import lachen from "../assets/img/lachen.jpg"
+import langzaam from "../assets/img/langzaam.png";
+import lucht from "../assets/img/lucht.png";
+import moe from "../assets/img/moe.png";
+import nat from "../assets/img/nat.png";
+import regent from "../assets/img/regent.png";
+import rondjeRijden from "../assets/img/rondje-rijden.png";
+import sterk from "../assets/img/sterk.png";
+import trappers from "../assets/img/trappers.png";
+import trots from "../assets/img/trots.png";
 import tweedehands from "../assets/img/tweedehands.png";
-import voeten from "../assets/img/voeten.avif";
-import vogels from "../assets/img/vogels.webp";
-import wind from "../assets/img/wind.jpg";
-import zon from "../assets/img/zon.jpg";
+import voeten from "../assets/img/voeten.png";
+import vogels from "../assets/img/vogels.png";
+import wind from "../assets/img/wind.png";
+import zon from "../assets/img/zon.png";
 import { UNICODE_WORD_REGEX } from "./textNodeHelper";
 
 
@@ -40,6 +40,7 @@ type WordtDetailsState = {
 const initialState : WordtDetailsState = {
     dictionary : {
         "lacht": { translation: "laughing", imageSrc: lachen },
+        "blij": { translation: "happy", imageSrc: lachen },
         "doek": { translation: "blanket", imageSrc: doek },
         "moe": { translation: "tired", imageSrc: moe  },
         "nat": { translation: "wet", imageSrc: nat },
@@ -48,7 +49,6 @@ const initialState : WordtDetailsState = {
         "kapot": { translation: "broken", imageSrc: kapot },
         "tweedehands": { translation: "second hand", imageSrc: tweedehands },
         "blauwe": { translation: "blue", imageSrc: blauw },
-        "blij": { translation: "happy", imageSrc:  ""},
         "wind": { translation: "wind", imageSrc: wind },
         "rondje rijden": { translation: "go for a ride", imageSrc: rondjeRijden },
         "zon": { translation: "sun", imageSrc: zon },
