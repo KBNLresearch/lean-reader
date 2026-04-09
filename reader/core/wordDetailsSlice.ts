@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import blauw from "../assets/img/blauw.png";
 import bomen from "../assets/img/bomen.png";
 import doek from "../assets/img/doek.png";
+import eenden from "../assets/img/eend.png";
 import huis from "../assets/img/huis.png";
 import kapot from "../assets/img/kapot.png";
 import lachen from "../assets/img/lachen.jpg"
@@ -58,7 +59,7 @@ const initialState : WordtDetailsState = {
         "vogels": { translation: "birds", imageSrc: vogels },
         "bomen": { translation: "trees", imageSrc: bomen },
         "trots": { translation: "proud", imageSrc: trots },
-        "eenden": { translation: "ducks", imageSrc: ""  },
+        "eenden": { translation: "ducks", imageSrc: eenden  },
         "sterk": { translation: "strong", imageSrc: sterk },
         "voeten": { translation: "feet", imageSrc: voeten }
     },
